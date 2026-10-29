@@ -1,0 +1,184 @@
+================================================================================
+PROJECT ARCHIVE & CONTEXT LOG: MODULAR HELICOPTER LOGIN FORM
+================================================================================
+Generated for: Future Development, Context Retrieval & Maintenance
+Architecture: 100% Pure HTML + CSS (Zero JavaScript, Zero External Libraries)
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW & CORE CONCEPT
+--------------------------------------------------------------------------------
+A high-impact, interactive airborne login component where a vector SVG helicopter 
+flies into the viewport from the right, settles in a hover, and unrolls an 
+underslung canvas document holding a secure pilot login form.
+
+The entire UI (flight entrance, hover vibration, unrolling canvas reveal, 
+authenticated departure to the left, and catastrophic spiral crash on failure) 
+is controlled purely through HTML form state mechanics (<input type="radio"> + 
+CSS :checked pseudo-class selectors + CSS keyframe animations).
+
+--------------------------------------------------------------------------------
+2. CHRONOLOGICAL EVOLUTION & PROBLEM-SOLVING LOG
+--------------------------------------------------------------------------------
+
+Phase 1: Aesthetic Cleanup
+  - Issue: Distracting pilot silhouette and an orange accent stripe inside the cockpit.
+  - Fix: Completely removed the pilot SVG elements and the orange stripe cutting 
+    across the cockpit windshield/door for a modern, sleek canopy glass finish.
+
+Phase 2: Cargo Rigging & Ladder
+  - Issue: Narrow rescue ladder was insufficient for carrying cargo/loads.
+  - Fix: Replaced with a wide 2-rope heavy-duty cargo suspension harness spanning 
+    between front and rear skid legs, equipped with spreader rungs and industrial 
+    clevis lifting hooks at the bottom.
+
+Phase 3: The Rolling Billboard Canvas
+  - Issue: Needed a dynamic way to reveal content held by the cargo hooks.
+  - Fix: Connected the hooks to a rigid spreader beam holding a canvas banner. 
+    The banner unrolls downward with an elastic settling bounce, while a weighted 
+    bottom roller rod physically descends and caps off the lower edge.
+
+Phase 4: Login Form Integration & Flight Mechanics
+  - Transformation: Scaled down the helicopter and repurposed the billboard 
+    into a functional Pilot Login Form (Callsign + Security Code).
+  - State Logic:
+      1. Default / Reset: Flies in from 2x viewport right (+160vw) to center, 
+         stabilizes, and unrolls the login sheet.
+      2. Authenticate & Depart (Success): Turns green, gathers lift, pitches 
+         forward, and flies off-screen to the left (-170vw).
+      3. Simulate Wrong Password (Fail): Strobe flashes red, turbine emits 
+         smoke particles, engine stalls, and the helicopter spirals down into 
+         a full vertical crash (+130vh).
+
+Phase 5: Blade Speed & Visual Tuning
+  - Issue: Rotor blades were spinning at 0.05s, which looked like a static blur.
+  - Fix: Slowed the main rotor to 0.42s and the tail rotor to 0.22s, allowing 
+    individual blades and yellow high-vis tips to be visibly tracked.
+  - Tail Rotor Fix: Removed the tilted perspective transform `scale(0.28, 1)` 
+    so the tail rotor spins flat on a 2D circle like a 4-petal flower/pinwheel.
+  - Landing Gear Color: Unified the front landing gear runner to match the dark 
+    slate finish (#1e293b) of the rear landing gear.
+
+Phase 6: Structural Modularity (Section Isolation)
+  - Refactored the entire codebase into isolated, modular sections, each with its 
+    own dedicated preceding <style> tag:
+      - Global & Base: :root variables, reset, viewport lock, keyframes
+      - .navbar-section: Floating mission control state trigger bar
+      - .helecopter-section: Scaled SVG fuselage, mast, rotors, skids, smoke
+      - .ladder-section: Connected suspension cables, rungs, and hooks
+      - .form-section: Top beam, unrolling card, input fields, buttons, roller
+
+Phase 7: Alignment & Connection Fixes
+  - Issue: The ladder was disconnected from the skids above and the form below.
+  - Fix: Re-mapped the helicopter SVG and ladder SVG to a 1:1 pixel scale (320px wide). 
+    Locked the skid attachment clamps, suspension cables, and form eyelet rings 
+    to the exact same horizontal coordinates: x = 120px and x = 200px. 
+    Removed inline SVG font descender baseline gaps using `display: block; line-height: 0;`.
+
+Phase 8: Mobile Engine & Viewport Hardening
+  - Issue 1 (Navbar Disappearing):
+      * Root Cause A: Centering with `transform: translateX(-50%)` caused mobile WebKit 
+        to drop the fixed layer during animations. Fixed by centering with 
+        `left: 0; right: 0; margin: 0 auto; width: fit-content;`.
+      * Root Cause B: 160vw translation expanded mobile document width and caused 
+        horizontal scrolling. Fixed by enclosing the rig in an `overflow: hidden` 
+        clipping container (.stage-viewport) and locking `body` with `position: fixed; inset: 0`.
+  - Issue 2 (Reset / Reload Failure):
+      * Root Cause: Mobile browsers cached radio states on reload, and animations 
+        did not restart because they were bound to base styles. Fixed by adding 
+        `autocomplete="off"` to radio inputs and binding all playback strictly to 
+        `#state-flyin:checked`.
+
+Phase 9: Standards Compliance & Input Overflow Fix
+  - Issue 1 (Linter Warning): Nonstandard `-webkit-appearance: none;` flagged by linter.
+    Fix: Replaced with standard W3C `appearance: none;`.
+  - Issue 2 (Input Box Right Border Overflow): Setting `appearance: none;` caused 
+    browsers to calculate input width as `content-box`, causing `width: 100% + padding` 
+    to punch through the right border.
+    Fix: Enforced `box-sizing: border-box; display: block; width: 100%;` across all 
+    form elements and set a 16px internal gutter for symmetric border alignment.
+
+--------------------------------------------------------------------------------
+3. CSS VARIABLE REFERENCE GUIDE (--hel-*)
+--------------------------------------------------------------------------------
+All colors and timings are dynamically inherited through the global :root block:
+
+  --hel-color-primary:        #1e293b  (Airframe, fuselage, landing gear, hardware)
+  --hel-color-secondary:      #f59e0b  (Warning blade tips, ladder rungs, caps, beacons)
+  --hel-color-background:     #090d16  (Shadows, dark outlines, rotor spars, deep accents)
+  --hel-color-foreground:     #38bdf8  (Windshield glass, primary buttons, glow accents)
+  --hel-color-canvas:         #ffffff  (Form card background)
+  --hel-color-text:           #0f172a  (Headings, input text values)
+  --hel-color-muted:          #475569  (Labels, secondary hints)
+  --hel-color-border:         #cbd5e1  (Input field borders)
+  --hel-color-success:        #10b981  (Success departure highlight glow)
+  --hel-color-danger:         #ef4444  (Crash beacon strobe, smoke, fail button)
+  --hel-color-danger-bg:      #fee2e2  (Fail button background)
+  --hel-color-danger-border:  #f87171  (Fail button dashed border)
+  --hel-sky-top:              #38bdf8  (Top atmosphere gradient)
+  --hel-sky-mid:              #bae6fd  (Middle atmosphere gradient)
+  --hel-sky-bot:              #e0f2fe  (Horizon atmosphere gradient)
+  --hel-speed:                1        (Master speed multiplier; 2 = 2x faster, 0.5 = 2x slower)
+  --hel-rotor-main-speed:     calc(0.42s / var(--hel-speed))
+  --hel-rotor-tail-speed:     calc(0.22s / var(--hel-speed))
+
+--------------------------------------------------------------------------------
+4. COMPONENT ARCHITECTURE & SECTION OUTLINE
+--------------------------------------------------------------------------------
+
+  <style> [Global Variables, Viewport Lock, Flight Keyframes] </style>
+  <body>
+    <!-- Pure CSS Radio State Triggers (autocomplete="off") -->
+    <input type="radio" id="state-flyin" ...>
+    <input type="radio" id="state-success" ...>
+    <input type="radio" id="state-fail" ...>
+
+    <!-- 0. NAVBAR SECTION -->
+    <style>.navbar-section { ... }</style>
+    <nav class="navbar-section">
+      <label for="state-flyin">🔄 Reset</label>
+      <label for="state-success">✅ Success</label>
+      <label for="state-fail">💥 Fail</label>
+    </nav>
+
+    <!-- STAGE VIEWPORT (Prevents mobile document overflow) -->
+    <div class="stage-viewport">
+      <div class="container">
+        <div class="container-hover-wrapper">
+
+          <!-- 1. HELICOPTER SECTION -->
+          <style>.helecopter-section { ... }</style>
+          <section class="helecopter-section">
+            [SVG: Scaled Fuselage, Observable Rotors, Skids at x=120, x=200]
+          </section>
+
+          <!-- 2. LADDER SECTION -->
+          <style>.ladder-section { ... }</style>
+          <section class="ladder-section">
+            [SVG: Dual Suspension Cables from x=120, x=200 down to Form Rings]
+          </section>
+
+          <!-- 3. FORM SECTION -->
+          <style>.form-section { ... }</style>
+          <section class="form-section">
+            [Top Beam + Unrolling Canvas Card (275px) + Flush Roller Rod]
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </body>
+
+--------------------------------------------------------------------------------
+5. KEY COORDINATE ANCHORS (NEVER ALTER WITHOUT RE-KEYING)
+--------------------------------------------------------------------------------
+  - Master Section Width:     320px
+  - Center Axis:              x = 160px
+  - Left Suspension Line:     x = 120px  (40px left of center)
+  - Right Suspension Line:    x = 200px  (40px right of center)
+  - Form Width:               270px (Centered inside 320px container)
+  - Form Canvas Height:       275px
+  - Roller Rod Resting Y:     translateY(275px)  (Docks flush on bottom border)
+
+================================================================================
+END OF ARCHIVE FILE
+================================================================================
