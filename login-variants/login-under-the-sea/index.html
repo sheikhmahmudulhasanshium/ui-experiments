@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Floating Ocean Login - Single Projectile Arc</title>
+</head>
+
+<style>
+    /* ================= PALETTE & TIMING VARIABLES ================= */
+    :root {
+        /* Atmospheric Sky & Sun */
+        --sky-top: #bae6fd;
+        --sky-mid: #e0f2fe;
+        --sky-warmth: #fef3c7;
+
+        /* Crystal Lagoon Water */
+        --lagoon-surface: #38bdf8;
+        --lagoon-shallow: #0284c7;
+        --lagoon-deep: #0369a1;
+        --lagoon-abyss: #075985;
+        --water-ripple: rgba(255, 255, 255, 0.95);
+
+        /* Frosted Glass UI Card */
+        --card-glass: rgba(255, 255, 255, 0.78);
+        --card-border: rgba(255, 255, 255, 0.9);
+        --card-shadow: rgba(3, 105, 161, 0.22);
+        --card-text: #0f172a;
+        --card-muted: #64748b;
+        --card-input-bg: rgba(255, 255, 255, 0.85);
+        --card-input-border: rgba(56, 189, 248, 0.3);
+        --card-btn-grad-1: #0ea5e9;
+        --card-btn-grad-2: #0284c7;
+
+        /* Single Jump Settings */
+        --jump-delay: 0.6s;
+        --jump-duration: 2.8s;
+        --card-bob-time: 4s;
+    }
+
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
+        overflow: hidden;
+        position: fixed;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: linear-gradient(180deg, 
+            var(--sky-top) 0%, 
+            var(--sky-mid) 38%, 
+            var(--sky-warmth) 48%, 
+            var(--lagoon-surface) 50%, 
+            var(--lagoon-shallow) 65%, 
+            var(--lagoon-deep) 85%, 
+            var(--lagoon-abyss) 100%
+        );
+    }
+
+    /* Ambient Sun Glow */
+    .ambient-sun {
+        position: absolute;
+        top: 8%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(254, 243, 199, 0.7) 40%, rgba(255, 255, 255, 0) 75%);
+        border-radius: 50%;
+        pointer-events: none;
+        filter: blur(4px);
+    }
+
+    .horizon-glow {
+        position: absolute;
+        top: 48%;
+        left: 0;
+        right: 0;
+        height: 4%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%);
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    /* Stage */
+    .sea-stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        perspective: 1000px;
+    }
+
+    /* ================= SINGLE JUMP (NO ROTATION / FLAT ORIENTATION) ================= */
+    /* 
+       Traverses horizontally from left 25% (-25vw) to right 25% (+25vw).
+       Orientation stays strictly 0deg (no rotation/tilt whatsoever).
+       Fires once and remains submerged on the right.
+    */
+    @keyframes singleParabolicJump {
+        0% {
+            /* Submerged at left 25% */
+            transform: translate(-25vw, 60px);
+            opacity: 0;
+            visibility: visible;
+        }
+        8% {
+            /* Breaches water surface at left 25% */
+            transform: translate(-25vw, 0px);
+            opacity: 1;
+        }
+        25% {
+            /* Ascending */
+            transform: translate(-13vw, -110px);
+            opacity: 1;
+        }
+        50% {
+            /* Apex: centered directly over the card */
+            transform: translate(0vw, -165px);
+            opacity: 1;
+        }
+        75% {
+            /* Descending */
+            transform: translate(13vw, -110px);
+            opacity: 1;
+        }
+        92% {
+            /* Hits water line at right 25% */
+            transform: translate(25vw, 0px);
+            opacity: 1;
+        }
+        100% {
+            /* Fully submerged at right 25% */
+            transform: translate(25vw, 65px);
+            opacity: 0;
+            visibility: hidden;
+        }
+    }
+
+    .single-jump-rig {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 130px;
+        height: 98px;
+        margin-left: -65px;
+        margin-top: -49px;
+        pointer-events: none;
+        z-index: 20; /* Jumps in front of card */
+        /* Jumps ONCE and finishes with forwards */
+        animation: singleParabolicJump var(--jump-duration) cubic-bezier(0.25, 0.45, 0.45, 0.95) var(--jump-delay) 1 forwards;
+        will-change: transform;
+    }
+
+    .single-jump-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 16px;
+        filter: drop-shadow(0 14px 22px rgba(3, 105, 161, 0.45));
+    }
+
+    /* ================= CONTACT RIPPLES (LEFT 25% & RIGHT 25%) ================= */
+    @keyframes singleContactRipple {
+        0% {
+            transform: rotateX(72deg) scale(0.2);
+            opacity: 0;
+        }
+        15% {
+            opacity: 1;
+        }
+        100% {
+            transform: rotateX(72deg) scale(3.5);
+            opacity: 0;
+        }
+    }
+
+    @keyframes singleSplashSpray {
+        0% {
+            transform: translateY(0) scale(0.3);
+            opacity: 0;
+        }
+        20% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-40px) scale(1.6);
+            opacity: 0;
+        }
+    }
+
+    /* Left Contact at 25% from left (25vw) */
+    .ripple-left-25 {
+        position: absolute;
+        top: calc(50% - 10px);
+        left: 25vw;
+        width: 70px;
+        height: 22px;
+        margin-left: -35px;
+        z-index: 12;
+        pointer-events: none;
+    }
+
+    /* Right Contact at 25% from right (75vw) */
+    .ripple-right-25 {
+        position: absolute;
+        top: calc(50% - 10px);
+        left: 75vw;
+        width: 70px;
+        height: 22px;
+        margin-left: -35px;
+        z-index: 12;
+        pointer-events: none;
+    }
+
+    .ripple-ring {
+        position: absolute;
+        inset: 0;
+        border: 2px solid var(--water-ripple);
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.95);
+        opacity: 0;
+    }
+
+    .ripple-ring.r2 { animation-delay: 0.14s !important; }
+    .ripple-ring.r3 { animation-delay: 0.28s !important; }
+
+    /* Left ripple fires on breach (at ~0.8s) */
+    .ripple-left-25 .ripple-ring {
+        animation: singleContactRipple 1.6s ease-out calc(var(--jump-delay) + 0.2s) 1 forwards;
+    }
+    .ripple-left-25 .spray-dots {
+        animation: singleSplashSpray 1.6s ease-out calc(var(--jump-delay) + 0.2s) 1 forwards;
+    }
+
+    /* Right ripple fires on water impact (at ~3.1s) */
+    .ripple-right-25 .ripple-ring {
+        animation: singleContactRipple 1.8s ease-out calc(var(--jump-delay) + var(--jump-duration) * 0.88) 1 forwards;
+    }
+    .ripple-right-25 .spray-dots {
+        animation: singleSplashSpray 1.8s ease-out calc(var(--jump-delay) + var(--jump-duration) * 0.88) 1 forwards;
+    }
+
+    .spray-dots {
+        position: absolute;
+        top: 2px;
+        left: 26px;
+        width: 16px;
+        height: 16px;
+        background: radial-gradient(circle, #ffffff 45%, rgba(255,255,255,0) 80%);
+        border-radius: 50%;
+        opacity: 0;
+    }
+
+    /* ================= FLOATING GLASS LOGIN CARD ================= */
+    @keyframes gentleBuoyancy {
+        0%, 100% {
+            transform: translateY(0px) rotate(-0.5deg);
+        }
+        50% {
+            transform: translateY(-9px) rotate(0.8deg);
+        }
+    }
+
+    .floating-card-container {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: gentleBuoyancy var(--card-bob-time) ease-in-out infinite;
+        margin-top: -24px;
+    }
+
+    .floating-wake {
+        position: absolute;
+        bottom: -22px;
+        width: 330px;
+        height: 44px;
+        background: radial-gradient(ellipse at center, rgba(255,255,255,0.85) 0%, rgba(56, 189, 248, 0.45) 45%, transparent 75%);
+        border-radius: 50%;
+        z-index: -1;
+    }
+
+    .glass-login-card {
+        width: 300px;
+        background: var(--card-glass);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1.5px solid var(--card-border);
+        border-radius: 24px;
+        padding: 24px 22px 26px;
+        box-shadow: 
+            0 25px 50px -12px var(--card-shadow),
+            0 2px 6px rgba(255, 255, 255, 0.8) inset;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glass-login-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 45%);
+        pointer-events: none;
+    }
+
+    .card-title-group {
+        text-align: center;
+        margin-bottom: 16px;
+    }
+
+    .card-title {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--card-text);
+        letter-spacing: -0.3px;
+    }
+
+    .card-subtitle {
+        font-size: 11px;
+        color: var(--card-muted);
+        margin-top: 2px;
+    }
+
+    .input-field-group {
+        margin-bottom: 11px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        text-align: left;
+    }
+
+    .input-field-group label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--card-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-left: 2px;
+    }
+
+    .input-field-group input {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1.5px solid var(--card-input-border);
+        border-radius: 12px;
+        font-size: 13px;
+        color: var(--card-text);
+        background: var(--card-input-bg);
+        outline: none;
+        appearance: none;
+        transition: all 0.25s ease;
+    }
+
+    .input-field-group input:focus {
+        border-color: var(--card-btn-grad-1);
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+    }
+
+    .login-btn {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-top: 15px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--card-btn-grad-1) 0%, var(--card-btn-grad-2) 100%);
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(14, 165, 233, 0.35);
+        transition: all 0.25s ease;
+    }
+
+    .login-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(14, 165, 233, 0.45);
+    }
+
+    /* ================= FOREGROUND LAGOON WATERLINE ================= */
+    @keyframes smoothWaveScroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    .foreground-water {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(180deg, rgba(56, 189, 248, 0.45) 0%, rgba(3, 105, 161, 0.85) 100%);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+        z-index: 15; /* Submerges projectile when y > 0 */
+        pointer-events: none;
+    }
+
+    .gentle-wave-svg {
+        position: absolute;
+        top: calc(50% - 10px);
+        left: 0;
+        width: 200%;
+        height: 22px;
+        z-index: 16;
+        pointer-events: none;
+        animation: smoothWaveScroll 9s linear infinite;
+        opacity: 0.9;
+    }
+
+    /* Replay Pill */
+    .replay-pill {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 9999;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--card-text);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: background 0.2s;
+    }
+    .replay-pill:hover {
+        background: #ffffff;
+    }
+</style>
+
+<body>
+
+    <!-- Simple Replay link that reloads the single-jump trigger -->
+    <a href="" class="replay-pill">↺ Replay Jump</a>
+
+    <div class="ambient-sun"></div>
+    <div class="horizon-glow"></div>
+
+    <main class="sea-stage">
+
+        <!-- ================= 1. THE SINGLE JUMP PROJECTILE ================= -->
+        <!-- Fixed 0deg orientation (no rotation/tilt whatsoever) -->
+        <div class="single-jump-rig">
+            <img 
+                src="https://cdn.dribbble.com/userupload/45846194/file/b06a37b342d2fbf8652971dc5c3ad7c7.jpg?format=webp&resize=400x300&vertical=center" 
+                alt="Projectile Image" 
+                class="single-jump-img"
+            />
+        </div>
+
+        <!-- ================= 2. LEFT CONTACT RIPPLE (LEFT 25%) ================= -->
+        <div class="ripple-left-25">
+            <div class="ripple-ring r1"></div>
+            <div class="ripple-ring r2"></div>
+            <div class="ripple-ring r3"></div>
+            <div class="spray-dots"></div>
+        </div>
+
+        <!-- ================= 3. RIGHT CONTACT RIPPLE (RIGHT 25%) ================= -->
+        <div class="ripple-right-25">
+            <div class="ripple-ring r1"></div>
+            <div class="ripple-ring r2"></div>
+            <div class="ripple-ring r3"></div>
+            <div class="spray-dots"></div>
+        </div>
+
+        <!-- ================= 4. FLOATING LOGIN FORM ================= -->
+        <div class="floating-card-container">
+            <div class="floating-wake"></div>
+
+            <div class="glass-login-card">
+                <div class="card-title-group">
+                    <h2 class="card-title">Oceanic Portal</h2>
+                    <p class="card-subtitle">Sign in to your floating station</p>
+                </div>
+
+                <form onsubmit="return false;">
+                    <div class="input-field-group">
+                        <label for="user-email">Account ID</label>
+                        <input type="text" id="user-email" placeholder="diver@lagoon.io" value="diver@lagoon.io" autocomplete="off">
+                    </div>
+
+                    <div class="input-field-group">
+                        <label for="user-pass">Security Key</label>
+                        <input type="password" id="user-pass" placeholder="••••••••" value="marine2025">
+                    </div>
+
+                    <button type="submit" class="login-btn">Explore Station</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ================= 5. FOREGROUND WATERLINE ================= -->
+        <!-- Submerges the projectile as it finishes the dive -->
+        <svg class="gentle-wave-svg" viewBox="0 0 1200 22" fill="none" preserveAspectRatio="none">
+            <path d="M0 11 C 75 3, 125 3, 200 11 C 275 19, 325 19, 400 11 C 475 3, 525 3, 600 11 C 675 19, 725 19, 800 11 C 875 3, 925 3, 1000 11 C 1075 19, 1125 19, 1200 11 L 1200 22 L 0 22 Z" fill="var(--lagoon-surface)"/>
+            <path d="M0 11 C 75 3, 125 3, 200 11 C 275 19, 325 19, 400 11 C 475 3, 525 3, 600 11 C 675 19, 725 19, 800 11 C 875 3, 925 3, 1000 11" stroke="rgba(255, 255, 255, 0.7)" stroke-width="1.8" fill="none"/>
+        </svg>
+
+        <div class="foreground-water"></div>
+
+    </main>
+
+</body>
+</html>
