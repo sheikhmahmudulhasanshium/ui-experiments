@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Floating Ocean Login - Single Projectile Arc</title>
+    <title>Floating Ocean Login - Looping Single Projectile</title>
 </head>
 
 <style>
@@ -32,10 +32,9 @@
         --card-btn-grad-1: #0ea5e9;
         --card-btn-grad-2: #0284c7;
 
-        /* Single Jump Settings */
-        --jump-delay: 0.6s;
-        --jump-duration: 2.8s;
-        --card-bob-time: 4s;
+        /* Jump Loop Cycle Settings */
+        --jump-cycle: 5.6s;   /* Full period between each single jump */
+        --card-bob-time: 3.8s;
     }
 
     *, *::before, *::after {
@@ -62,7 +61,7 @@
         );
     }
 
-    /* Ambient Sun Glow */
+    /* Ambient Warm Sun */
     .ambient-sun {
         position: absolute;
         top: 8%;
@@ -87,7 +86,7 @@
         z-index: 2;
     }
 
-    /* Stage */
+    /* Main Perspective Stage */
     .sea-stage {
         position: relative;
         width: 100%;
@@ -98,53 +97,65 @@
         perspective: 1000px;
     }
 
-    /* ================= SINGLE JUMP (NO ROTATION / FLAT ORIENTATION) ================= */
-    /* 
-       Traverses horizontally from left 25% (-25vw) to right 25% (+25vw).
-       Orientation stays strictly 0deg (no rotation/tilt whatsoever).
-       Fires once and remains submerged on the right.
+    /* ================= 1 JUMP PER LOOP CYCLE (NO ROTATION / ZERO TILT) ================= */
+    /*
+       Trajectory:
+       - 0% - 18%: Deep underwater (hidden)
+       - 25%: BREACH AT LEFT 25% (-25vw, y = 0px) -> Left Ripple fires
+       - 37%: Ascending through the air (-13vw, y = -110px)
+       - 50%: APEX OVER THE CARD (0vw, y = -170px)
+       - 63%: Descending through the air (+13vw, y = -110px)
+       - 75%: DIVE AT RIGHT 25% (+25vw, y = 0px) -> Right Ripple fires
+       - 82% - 100%: Deep underwater return / calm ocean intermission
+       * All keyframes are locked at rotate(0deg) *
     */
-    @keyframes singleParabolicJump {
-        0% {
-            /* Submerged at left 25% */
-            transform: translate(-25vw, 60px);
+    @keyframes singleJumpLoop {
+        0%, 18% {
+            transform: translate(-25vw, 65px) rotate(0deg);
             opacity: 0;
+            visibility: hidden;
+        }
+        20% {
+            visibility: visible;
+            transform: translate(-25vw, 35px) rotate(0deg);
+            opacity: 0.8;
+        }
+        /* WATER BREACH CONTACT AT LEFT 25% */
+        25% {
+            transform: translate(-25vw, 0px) rotate(0deg);
+            opacity: 1;
+        }
+        37% {
+            transform: translate(-13vw, -110px) rotate(0deg);
+            opacity: 1;
+        }
+        /* APEX OVER THE FLOATING CARD */
+        50% {
+            transform: translate(0vw, -170px) rotate(0deg);
+            opacity: 1;
+        }
+        63% {
+            transform: translate(13vw, -110px) rotate(0deg);
+            opacity: 1;
+        }
+        /* WATER DIVE IMPACT AT RIGHT 25% */
+        75% {
+            transform: translate(25vw, 0px) rotate(0deg);
+            opacity: 1;
+        }
+        80% {
+            transform: translate(25vw, 45px) rotate(0deg);
+            opacity: 0.6;
             visibility: visible;
         }
-        8% {
-            /* Breaches water surface at left 25% */
-            transform: translate(-25vw, 0px);
-            opacity: 1;
-        }
-        25% {
-            /* Ascending */
-            transform: translate(-13vw, -110px);
-            opacity: 1;
-        }
-        50% {
-            /* Apex: centered directly over the card */
-            transform: translate(0vw, -165px);
-            opacity: 1;
-        }
-        75% {
-            /* Descending */
-            transform: translate(13vw, -110px);
-            opacity: 1;
-        }
-        92% {
-            /* Hits water line at right 25% */
-            transform: translate(25vw, 0px);
-            opacity: 1;
-        }
-        100% {
-            /* Fully submerged at right 25% */
-            transform: translate(25vw, 65px);
+        84%, 100% {
+            transform: translate(25vw, 75px) rotate(0deg);
             opacity: 0;
             visibility: hidden;
         }
     }
 
-    .single-jump-rig {
+    .loop-jump-rig {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -153,13 +164,13 @@
         margin-left: -65px;
         margin-top: -49px;
         pointer-events: none;
-        z-index: 20; /* Jumps in front of card */
-        /* Jumps ONCE and finishes with forwards */
-        animation: singleParabolicJump var(--jump-duration) cubic-bezier(0.25, 0.45, 0.45, 0.95) var(--jump-delay) 1 forwards;
+        z-index: 20; /* Jumps in front of the card */
+        /* Repeats exactly 1 jump per cycle in an infinite loop */
+        animation: singleJumpLoop var(--jump-cycle) cubic-bezier(0.25, 0.45, 0.45, 0.95) infinite;
         will-change: transform;
     }
 
-    .single-jump-img {
+    .loop-jump-img {
         width: 100%;
         height: 100%;
         object-fit: contain;
@@ -167,13 +178,37 @@
         filter: drop-shadow(0 14px 22px rgba(3, 105, 161, 0.45));
     }
 
-    /* ================= CONTACT RIPPLES (LEFT 25% & RIGHT 25%) ================= */
-    @keyframes singleContactRipple {
+    /* Subsurface Shadow gliding before breach */
+    @keyframes underwaterShadowLoop {
+        0%, 15%  { opacity: 0; transform: translate(-25vw, 20px) scale(0.4); }
+        22%      { opacity: 0.35; transform: translate(-25vw, 6px) scale(0.8); }
+        26%      { opacity: 0; transform: translate(-25vw, 0px) scale(1); }
+        100%     { opacity: 0; }
+    }
+
+    .subsurface-shadow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 90px;
+        height: 20px;
+        margin-left: -45px;
+        margin-top: -10px;
+        background: radial-gradient(ellipse at center, rgba(3, 105, 161, 0.7) 0%, transparent 70%);
+        border-radius: 50%;
+        filter: blur(5px);
+        pointer-events: none;
+        z-index: 6;
+        animation: underwaterShadowLoop var(--jump-cycle) linear infinite;
+    }
+
+    /* ================= CONTACT RIPPLES (SYNCHRONIZED WITH THE LOOP) ================= */
+    @keyframes loopContactRipple {
         0% {
             transform: rotateX(72deg) scale(0.2);
             opacity: 0;
         }
-        15% {
+        12% {
             opacity: 1;
         }
         100% {
@@ -182,12 +217,12 @@
         }
     }
 
-    @keyframes singleSplashSpray {
+    @keyframes loopSplashSpray {
         0% {
             transform: translateY(0) scale(0.3);
             opacity: 0;
         }
-        20% {
+        18% {
             opacity: 1;
         }
         100% {
@@ -196,7 +231,7 @@
         }
     }
 
-    /* Left Contact at 25% from left (25vw) */
+    /* Left Contact Point: exactly 25% from left (25vw) */
     .ripple-left-25 {
         position: absolute;
         top: calc(50% - 10px);
@@ -208,7 +243,7 @@
         pointer-events: none;
     }
 
-    /* Right Contact at 25% from right (75vw) */
+    /* Right Contact Point: exactly 25% from right (75vw) */
     .ripple-right-25 {
         position: absolute;
         top: calc(50% - 10px);
@@ -229,23 +264,27 @@
         opacity: 0;
     }
 
-    .ripple-ring.r2 { animation-delay: 0.14s !important; }
-    .ripple-ring.r3 { animation-delay: 0.28s !important; }
+    .ripple-ring.r2 { animation-delay: 0.15s !important; }
+    .ripple-ring.r3 { animation-delay: 0.3s !important; }
 
-    /* Left ripple fires on breach (at ~0.8s) */
+    /* Left Ripple fires at 25% of the cycle */
     .ripple-left-25 .ripple-ring {
-        animation: singleContactRipple 1.6s ease-out calc(var(--jump-delay) + 0.2s) 1 forwards;
+        animation: loopContactRipple var(--jump-cycle) ease-out infinite;
+        animation-delay: calc(var(--jump-cycle) * 0.25);
     }
     .ripple-left-25 .spray-dots {
-        animation: singleSplashSpray 1.6s ease-out calc(var(--jump-delay) + 0.2s) 1 forwards;
+        animation: loopSplashSpray var(--jump-cycle) ease-out infinite;
+        animation-delay: calc(var(--jump-cycle) * 0.25);
     }
 
-    /* Right ripple fires on water impact (at ~3.1s) */
+    /* Right Ripple fires at 75% of the cycle */
     .ripple-right-25 .ripple-ring {
-        animation: singleContactRipple 1.8s ease-out calc(var(--jump-delay) + var(--jump-duration) * 0.88) 1 forwards;
+        animation: loopContactRipple var(--jump-cycle) ease-out infinite;
+        animation-delay: calc(var(--jump-cycle) * 0.75);
     }
     .ripple-right-25 .spray-dots {
-        animation: singleSplashSpray 1.8s ease-out calc(var(--jump-delay) + var(--jump-duration) * 0.88) 1 forwards;
+        animation: loopSplashSpray var(--jump-cycle) ease-out infinite;
+        animation-delay: calc(var(--jump-cycle) * 0.75);
     }
 
     .spray-dots {
@@ -403,7 +442,7 @@
         background: linear-gradient(180deg, rgba(56, 189, 248, 0.45) 0%, rgba(3, 105, 161, 0.85) 100%);
         backdrop-filter: blur(2px);
         -webkit-backdrop-filter: blur(2px);
-        z-index: 15; /* Submerges projectile when y > 0 */
+        z-index: 15; /* Submerges projectile when under water line */
         pointer-events: none;
     }
 
@@ -418,47 +457,25 @@
         animation: smoothWaveScroll 9s linear infinite;
         opacity: 0.9;
     }
-
-    /* Replay Pill */
-    .replay-pill {
-        position: fixed;
-        top: 14px;
-        right: 14px;
-        z-index: 9999;
-        text-decoration: none;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--card-text);
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(8px);
-        padding: 6px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.9);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        transition: background 0.2s;
-    }
-    .replay-pill:hover {
-        background: #ffffff;
-    }
 </style>
 
 <body>
-
-    <!-- Simple Replay link that reloads the single-jump trigger -->
-    <a href="" class="replay-pill">↺ Replay Jump</a>
 
     <div class="ambient-sun"></div>
     <div class="horizon-glow"></div>
 
     <main class="sea-stage">
 
-        <!-- ================= 1. THE SINGLE JUMP PROJECTILE ================= -->
-        <!-- Fixed 0deg orientation (no rotation/tilt whatsoever) -->
-        <div class="single-jump-rig">
+        <!-- Subsurface Shadow preceding each jump in the loop -->
+        <div class="subsurface-shadow"></div>
+
+        <!-- ================= 1. THE LOOPING PROJECTILE (1 JUMP PER CYCLE) ================= -->
+        <!-- Fixed 0deg orientation at all times (no rotation/tilt) -->
+        <div class="loop-jump-rig">
             <img 
                 src="https://cdn.dribbble.com/userupload/45846194/file/b06a37b342d2fbf8652971dc5c3ad7c7.jpg?format=webp&resize=400x300&vertical=center" 
-                alt="Projectile Image" 
-                class="single-jump-img"
+                alt="Looping Projectile Image" 
+                class="loop-jump-img"
             />
         </div>
 
@@ -505,7 +522,7 @@
         </div>
 
         <!-- ================= 5. FOREGROUND WATERLINE ================= -->
-        <!-- Submerges the projectile as it finishes the dive -->
+        <!-- Submerges the projectile as it enters the water -->
         <svg class="gentle-wave-svg" viewBox="0 0 1200 22" fill="none" preserveAspectRatio="none">
             <path d="M0 11 C 75 3, 125 3, 200 11 C 275 19, 325 19, 400 11 C 475 3, 525 3, 600 11 C 675 19, 725 19, 800 11 C 875 3, 925 3, 1000 11 C 1075 19, 1125 19, 1200 11 L 1200 22 L 0 22 Z" fill="var(--lagoon-surface)"/>
             <path d="M0 11 C 75 3, 125 3, 200 11 C 275 19, 325 19, 400 11 C 475 3, 525 3, 600 11 C 675 19, 725 19, 800 11 C 875 3, 925 3, 1000 11" stroke="rgba(255, 255, 255, 0.7)" stroke-width="1.8" fill="none"/>
