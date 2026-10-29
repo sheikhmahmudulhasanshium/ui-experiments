@@ -10,10 +10,10 @@
     /* ================= GLOBAL CONFIGURATION VARIABLES ================= */
     :root {
         /* 1. Core Component Palette */
-        --hel-color-primary: #1e293b;       /* Airframe, Fuselage, Both Skids & Heavy Hardware */
+        --hel-color-primary: #1e293b;       /* Airframe, Fuselage, Skids & Heavy Hardware */
         --hel-color-secondary: #f59e0b;     /* Warning Tips, Rungs, Rivets, Caps & Beacons */
         --hel-color-background: #090d16;    /* Dark Outlines, Blade Spars, Hub Core & Shadows */
-        --hel-color-foreground: #38bdf8;    /* Cockpit Glass Sheen, Primary Action & High-Vis Glow */
+        --hel-color-foreground: #38bdf8;    /* Cockpit Glass, Primary Action & High-Vis Glow */
         --hel-color-canvas: #ffffff;        /* Billboard Form Sheet Background */
 
         /* 2. Form Interface Elements */
@@ -78,50 +78,6 @@
     /* State Machine Radios */
     input[type="radio"].state-toggle {
         display: none;
-    }
-
-    /* Floating Mission Controller */
-    .demo-bar {
-        position: fixed;
-        top: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 6px;
-        background: rgba(15, 23, 42, 0.88);
-        backdrop-filter: blur(10px);
-        padding: 6px 10px;
-        border-radius: 999px;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        z-index: 9999;
-        max-width: 95vw;
-    }
-    .demo-btn {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.6px;
-        padding: 5px 12px;
-        border-radius: 999px;
-        cursor: pointer;
-        color: #94a3b8;
-        white-space: nowrap;
-        transition: all 0.2s ease;
-    }
-    .demo-btn:hover { color: var(--hel-color-canvas); }
-    #state-flyin:checked ~ .demo-bar label[for="state-flyin"] {
-        background: var(--hel-color-foreground);
-        color: var(--hel-color-background);
-    }
-    #state-success:checked ~ .demo-bar label[for="state-success"] {
-        background: var(--hel-color-success);
-        color: var(--hel-color-canvas);
-        box-shadow: 0 0 10px var(--hel-color-success);
-    }
-    #state-fail:checked ~ .demo-bar label[for="state-fail"] {
-        background: var(--hel-color-danger);
-        color: var(--hel-color-canvas);
-        box-shadow: 0 0 10px var(--hel-color-danger);
     }
 
     /* Master Flight Animations */
@@ -196,13 +152,6 @@
     <input type="radio" name="sim-state" id="state-success" class="state-toggle">
     <input type="radio" name="sim-state" id="state-fail" class="state-toggle">
 
-    <!-- Mission Control Bar -->
-    <div class="demo-bar">
-        <label for="state-flyin" class="demo-btn">🔄 Reset</label>
-        <label for="state-success" class="demo-btn">✅ Success (Fly Left)</label>
-        <label for="state-fail" class="demo-btn">💥 Fail (Crash)</label>
-    </div>
-
     <!-- Sky Backdrop -->
     <div class="sky-bg">
         <div class="cloud cloud-1"></div>
@@ -210,73 +159,136 @@
         <div class="cloud cloud-3"></div>
     </div>
 
-    <!-- 1. HELICOPTER STYLE -->
+    <!-- ================= 0. NAVBAR SECTION ================= -->
     <style>
-        .helecopter-section {
-            width: 320px;
-            height: 120px;
-            position: relative;
-            display: block;
-            margin: 0;
-            padding: 0;
-            line-height: 0;
-            overflow: visible;
+        .navbar-section {
+            position: fixed;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(10px);
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            max-width: 95vw;
         }
 
-        .helecopter-section .chopper-svg {
-            width: 320px;
-            height: 120px;
-            display: block;
-            overflow: visible;
+        .navbar-section .nav-btn {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            color: #94a3b8;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            user-select: none;
         }
 
-        @keyframes spinBlade {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
+        .navbar-section .nav-btn:hover {
+            color: var(--hel-color-canvas);
         }
 
-        .helecopter-section .main-blade-spin {
-            animation: spinBlade var(--hel-rotor-main-speed) linear infinite;
-            transform-box: fill-box;
-            transform-origin: center;
+        /* Active Button Highlight based on CSS Radios */
+        #state-flyin:checked ~ .navbar-section label[for="state-flyin"] {
+            background: var(--hel-color-foreground);
+            color: var(--hel-color-background);
         }
 
-        .helecopter-section .tail-blade-spin {
-            animation: spinBlade var(--hel-rotor-tail-speed) linear infinite;
-            transform-box: fill-box;
-            transform-origin: center;
+        #state-success:checked ~ .navbar-section label[for="state-success"] {
+            background: var(--hel-color-success);
+            color: var(--hel-color-canvas);
+            box-shadow: 0 0 10px var(--hel-color-success);
         }
 
-        @keyframes billowSmoke {
-            0%   { opacity: 0; transform: translate(0, 0) scale(0.3); }
-            50%  { opacity: 0.9; }
-            100% { opacity: 0; transform: translate(-60px, -120px) scale(3.5); }
-        }
-
-        .helecopter-section .smoke-puff {
-            position: absolute;
-            top: 25px;
-            left: 195px;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: radial-gradient(circle, var(--hel-color-muted) 0%, rgba(30,41,59,0) 80%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #state-fail:checked ~ .container .smoke-1 { animation: billowSmoke 0.9s ease-out infinite; }
-        #state-fail:checked ~ .container .smoke-2 { animation: billowSmoke 0.9s ease-out infinite 0.3s; }
-        #state-fail:checked ~ .container .smoke-3 { animation: billowSmoke 0.9s ease-out infinite 0.6s; }
-        #state-fail:checked ~ .container .main-blade-spin { animation-duration: 0.9s; }
-        #state-fail:checked ~ .container .strobe-beacon { 
-            fill: var(--hel-color-danger) !important; 
-            filter: drop-shadow(0 0 8px var(--hel-color-danger)); 
+        #state-fail:checked ~ .navbar-section label[for="state-fail"] {
+            background: var(--hel-color-danger);
+            color: var(--hel-color-canvas);
+            box-shadow: 0 0 10px var(--hel-color-danger);
         }
     </style>
 
+    <nav class="navbar-section">
+        <label for="state-flyin" class="nav-btn">🔄 Reset</label>
+        <label for="state-success" class="nav-btn">✅ Success (Fly Left)</label>
+        <label for="state-fail" class="nav-btn">💥 Fail (Crash)</label>
+    </nav>
+
+    <!-- ================= MASTER AIRBORNE RIG CONTAINER ================= -->
     <div class="container">
         <div class="container-hover-wrapper">
+
+            <!-- 1. HELICOPTER STYLE -->
+            <style>
+                .helecopter-section {
+                    width: 320px;
+                    height: 120px;
+                    position: relative;
+                    display: block;
+                    margin: 0;
+                    padding: 0;
+                    line-height: 0;
+                    overflow: visible;
+                }
+
+                .helecopter-section .chopper-svg {
+                    width: 320px;
+                    height: 120px;
+                    display: block;
+                    overflow: visible;
+                }
+
+                @keyframes spinBlade {
+                    from { transform: rotate(0deg); }
+                    to   { transform: rotate(360deg); }
+                }
+
+                .helecopter-section .main-blade-spin {
+                    animation: spinBlade var(--hel-rotor-main-speed) linear infinite;
+                    transform-box: fill-box;
+                    transform-origin: center;
+                }
+
+                .helecopter-section .tail-blade-spin {
+                    animation: spinBlade var(--hel-rotor-tail-speed) linear infinite;
+                    transform-box: fill-box;
+                    transform-origin: center;
+                }
+
+                @keyframes billowSmoke {
+                    0%   { opacity: 0; transform: translate(0, 0) scale(0.3); }
+                    50%  { opacity: 0.9; }
+                    100% { opacity: 0; transform: translate(-60px, -120px) scale(3.5); }
+                }
+
+                .helecopter-section .smoke-puff {
+                    position: absolute;
+                    top: 25px;
+                    left: 195px;
+                    width: 22px;
+                    height: 22px;
+                    border-radius: 50%;
+                    background: radial-gradient(circle, var(--hel-color-muted) 0%, rgba(30,41,59,0) 80%);
+                    opacity: 0;
+                    pointer-events: none;
+                }
+
+                #state-fail:checked ~ .container .smoke-1 { animation: billowSmoke 0.9s ease-out infinite; }
+                #state-fail:checked ~ .container .smoke-2 { animation: billowSmoke 0.9s ease-out infinite 0.3s; }
+                #state-fail:checked ~ .container .smoke-3 { animation: billowSmoke 0.9s ease-out infinite 0.6s; }
+                #state-fail:checked ~ .container .main-blade-spin { animation-duration: 0.9s; }
+                #state-fail:checked ~ .container .strobe-beacon { 
+                    fill: var(--hel-color-danger) !important; 
+                    filter: drop-shadow(0 0 8px var(--hel-color-danger)); 
+                }
+            </style>
 
             <!-- 1. HELICOPTER SECTION -->
             <section class="helecopter-section">
@@ -284,7 +296,6 @@
                 <div class="smoke-puff smoke-2"></div>
                 <div class="smoke-puff smoke-3"></div>
 
-                <!-- 1:1 PIXEL MAP -->
                 <svg class="chopper-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="fuselage" x1="120" y1="40" x2="160" y2="105" gradientUnits="userSpaceOnUse">
@@ -317,14 +328,12 @@
                             <line x1="-15" y1="0" x2="15" y2="0" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
                             <line x1="0" y1="-15" x2="0" y2="15" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
                             
-                            <!-- Flower Tips -->
                             <circle cx="-13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
                             <circle cx="13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
                             <circle cx="0" cy="-13" r="1.8" fill="var(--hel-color-secondary)"/>
                             <circle cx="0" cy="13" r="1.8" fill="var(--hel-color-secondary)"/>
                         </g>
 
-                        <!-- Center Core -->
                         <circle cx="0" cy="0" r="3.6" fill="var(--hel-color-primary)"/>
                         <circle cx="0" cy="0" r="1.8" fill="var(--hel-color-foreground)"/>
                     </g>
@@ -393,20 +402,16 @@
 
             <!-- 2. LADDER SECTION -->
             <section class="ladder-section">
-                <!-- Mathematically locked cables from x=120 and x=200 -->
                 <svg class="ladder-svg" viewBox="0 0 320 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Skid Clamps -->
                     <rect x="116" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
                     <rect x="196" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
 
-                    <!-- Left & Right Cables -->
                     <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
                     <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
 
                     <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
                     <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
 
-                    <!-- Spreader Rungs -->
                     <g stroke-linecap="round">
                         <line x1="116" y1="14" x2="204" y2="14" stroke="var(--hel-color-background)" stroke-width="3"/>
                         <line x1="118" y1="14" x2="202" y2="14" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
@@ -415,7 +420,6 @@
                         <line x1="118" y1="26" x2="202" y2="26" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
                     </g>
 
-                    <!-- Bottom Hooks locking right onto form eyelets -->
                     <circle cx="120" cy="40" r="3.5" fill="none" stroke="var(--hel-color-background)" stroke-width="2"/>
                     <circle cx="120" cy="40" r="1.5" fill="var(--hel-color-secondary)"/>
 
@@ -605,13 +609,11 @@
 
             <!-- 3. FORM SECTION -->
             <section class="form-section">
-                <!-- Top Beam -->
                 <div class="hanger-beam">
                     <div class="beam-cap beam-cap-left"></div>
                     <div class="beam-cap beam-cap-right"></div>
                 </div>
 
-                <!-- Unrolling Form Canvas -->
                 <div class="canvas-card">
                     <div class="form-header">
                         <span class="badge">SECURE AIR-LINK</span>
@@ -640,7 +642,6 @@
                     </div>
                 </div>
 
-                <!-- Roller Rod flush on border -->
                 <div class="roller-rod"></div>
             </section>
 
