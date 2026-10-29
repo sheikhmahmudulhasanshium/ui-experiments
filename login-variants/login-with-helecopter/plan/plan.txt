@@ -1,0 +1,3 @@
+inspired from: https://www.facebook.com/reel/4487913204816280
+scenerio:
+helecopter comes and drops a roll of canvas/paper where the login form renders
