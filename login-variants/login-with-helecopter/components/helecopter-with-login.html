@@ -38,7 +38,13 @@
         --hel-rotor-tail-speed: calc(0.22s / var(--hel-speed));
     }
 
-    /* ================= MOBILE VIEWPORT LOCK ================= */
+    /* ================= BASE RESET & MOBILE VIEWPORT LOCK ================= */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
     html, body {
         width: 100%;
         height: 100%;
@@ -46,9 +52,9 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        position: fixed; /* Prevents mobile scroll shifts on reload & button press */
+        position: fixed;
         inset: 0;
-        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
         touch-action: manipulation;
     }
 
@@ -80,7 +86,7 @@
         display: none;
     }
 
-    /* Dedicated Stage: Clips 160vw animation so mobile page width never expands */
+    /* Viewport Stage */
     .stage-viewport {
         position: absolute;
         inset: 0;
@@ -137,18 +143,21 @@
         align-items: center;
     }
 
-    /* Responsive scale */
+    /* Responsive Scaling */
     @media (max-width: 480px) {
         .container { transform: scale(0.85); }
     }
-    @media (max-height: 720px) {
+    @media (max-height: 700px) {
         .container { transform: scale(0.8); }
     }
-    @media (max-height: 600px) {
+    @media (max-height: 580px) {
         .container { transform: scale(0.68); }
     }
+    @media (max-height: 480px) {
+        .container { transform: scale(0.55); }
+    }
 
-    /* ================= STATE SWITCH TRIGGERS ================= */
+    /* State Switch Actions */
     #state-flyin:checked ~ .stage-viewport .container {
         animation: flyInFromRight calc(2.8s / var(--hel-speed)) cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
     }
@@ -167,31 +176,28 @@
 
 <body>
 
-    <!-- State Radios (autocomplete="off" stops mobile browsers from persisting crash state on page reload) -->
+    <!-- State Radios -->
     <input type="radio" name="sim-state" id="state-flyin" class="state-toggle" checked autocomplete="off">
     <input type="radio" name="sim-state" id="state-success" class="state-toggle" autocomplete="off">
     <input type="radio" name="sim-state" id="state-fail" class="state-toggle" autocomplete="off">
 
-    <!-- Ambient Sky -->
+    <!-- Sky Backdrop -->
     <div class="sky-bg">
         <div class="cloud cloud-1"></div>
         <div class="cloud cloud-2"></div>
         <div class="cloud cloud-3"></div>
     </div>
 
-    <!-- ================= 0. NAVBAR SECTION (MOBILE PROTECTED) ================= -->
+    <!-- ================= 0. NAVBAR SECTION ================= -->
     <style>
         .navbar-section {
             position: fixed;
-            /* Safe area for mobile notch / dynamic island */
             top: 12px;
             top: calc(12px + env(safe-area-inset-top, 0px));
-            /* CENTERED WITHOUT TRANSFORM: fixes WebKit fixed-position vanishing bug */
             left: 0;
             right: 0;
             margin-left: auto;
             margin-right: auto;
-            width: -moz-fit-content;
             width: fit-content;
             max-width: calc(100vw - 24px);
 
@@ -201,7 +207,6 @@
             gap: 6px;
             background: rgba(15, 23, 42, 0.92);
             backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
             padding: 5px 8px;
             border-radius: 999px;
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -222,14 +227,12 @@
             white-space: nowrap;
             transition: all 0.2s ease;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .navbar-section .nav-btn:hover {
             color: var(--hel-color-canvas);
         }
 
-        /* Active Button Highlight based on CSS Radios */
         #state-flyin:checked ~ .navbar-section label[for="state-flyin"] {
             background: var(--hel-color-foreground);
             color: var(--hel-color-background);
@@ -247,7 +250,6 @@
             box-shadow: 0 0 10px var(--hel-color-danger);
         }
 
-        /* Mobile compact styling */
         @media (max-width: 420px) {
             .navbar-section {
                 padding: 4px 6px;
@@ -269,7 +271,7 @@
         <label for="state-fail" class="nav-btn">💥 Fail<span class="detail-text"> (Crash)</span></label>
     </nav>
 
-    <!-- ================= STAGE VIEWPORT (CLIPS 160VW HORIZONTAL EXPANSION) ================= -->
+    <!-- ================= STAGE VIEWPORT ================= -->
     <div class="stage-viewport">
         <div class="container">
             <div class="container-hover-wrapper">
@@ -390,7 +392,7 @@
 
                         <!-- Fuselage Body -->
                         <path d="M102 82 C 98 68, 108 55, 128 50 C 146 45, 172 45, 196 54 C 202 56, 206 63, 198 79 C 192 94, 174 103, 142 103 C 116 103, 104 92, 102 82 Z" 
-                              fill="url(#fuselage)" stroke="var(--hel-color-background)" stroke-width="1.5"/>
+                          fill="url(#fuselage)" stroke="var(--hel-color-background)" stroke-width="1.5"/>
 
                         <!-- Engine Doghouse -->
                         <path d="M150 48 C 154 40, 172 38, 190 45 C 198 48, 200 53, 192 56 Z" fill="var(--hel-color-primary)"/>
@@ -398,7 +400,7 @@
 
                         <!-- Cockpit -->
                         <path d="M106 80 C 103 69, 112 56, 128 52 C 146 48, 162 50, 167 60 C 170 67, 169 79, 158 86 C 145 92, 117 92, 107 86 Z" 
-                              fill="url(#windshield)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
+                          fill="url(#windshield)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
                         <path d="M135 52 C 136 65, 135 76, 132 89" stroke="var(--hel-color-primary)" stroke-width="2"/>
 
                         <!-- Foreground Skid (Front Leg - Matches back leg) -->
@@ -414,7 +416,7 @@
                         <!-- Rotor Mast -->
                         <rect x="162" y="24" width="5" height="20" fill="var(--hel-color-primary)"/>
 
-                        <!-- Observable Main Blades -->
+                        <!-- Observable Main Rotor Blades -->
                         <g transform="translate(164, 22) scale(1, 0.22)">
                             <g class="main-blade-spin">
                                 <line x1="-125" y1="0" x2="125" y2="0" stroke="var(--hel-color-background)" stroke-width="5.5" stroke-linecap="round"/>
@@ -478,7 +480,7 @@
                     </svg>
                 </section>
 
-                <!-- 3. FORM STYLE -->
+                <!-- 3. FORM STYLE (NO RIGHT-BORDER OVERFLOW) -->
                 <style>
                     .form-section {
                         width: 320px;
@@ -521,21 +523,29 @@
 
                     @keyframes unrollBottomRod {
                         0%   { transform: translateY(0px); }
-                        85%  { transform: translateY(296px); }
-                        100% { transform: translateY(290px); }
+                        85%  { transform: translateY(280px); }
+                        100% { transform: translateY(275px); }
                     }
 
+                    /* Perfectly Fitted 275px Card with strict border-box */
                     .form-section .canvas-card {
                         width: 270px;
-                        height: 290px;
+                        height: 275px;
+                        box-sizing: border-box;
                         background: var(--hel-color-canvas);
                         border: 2px solid var(--hel-color-primary);
                         border-top: none;
-                        padding: 16px 16px 14px;
+                        padding: 14px 16px 12px;
                         box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2);
                         position: relative;
                         z-index: 2;
                         clip-path: inset(0 0 100% 0);
+                        overflow: hidden;
+                    }
+
+                    .form-section .login-inputs-wrapper {
+                        width: 100%;
+                        box-sizing: border-box;
                     }
 
                     .form-section .roller-rod {
@@ -550,7 +560,6 @@
                         transform: translateY(0px);
                     }
 
-                    /* Replay Unroll on Reset */
                     #state-flyin:checked ~ .stage-viewport .canvas-card {
                         animation: unrollCanvasSheet calc(1.2s / var(--hel-speed)) cubic-bezier(0.35, 0.05, 0.2, 1) calc(2.6s / var(--hel-speed)) forwards;
                     }
@@ -564,7 +573,7 @@
                     }
                     #state-success:checked ~ .stage-viewport .roller-rod,
                     #state-fail:checked ~ .stage-viewport .roller-rod {
-                        transform: translateY(290px);
+                        transform: translateY(275px);
                     }
 
                     .form-section .roller-rod::before,
@@ -583,49 +592,58 @@
 
                     .form-section .form-header {
                         text-align: center;
-                        margin-bottom: 12px;
+                        margin-bottom: 8px;
+                        width: 100%;
                     }
                     .form-section .badge {
                         display: inline-block;
-                        font-size: 9px;
+                        font-size: 8.5px;
                         font-weight: 800;
                         letter-spacing: 1.2px;
                         color: var(--hel-color-foreground);
                         background: var(--hel-sky-bot);
                         padding: 2px 8px;
                         border-radius: 10px;
-                        margin-bottom: 4px;
+                        margin-bottom: 3px;
                     }
                     .form-section .form-title {
-                        font-size: 17px;
+                        font-size: 16px;
                         font-weight: 900;
                         color: var(--hel-color-text);
                         letter-spacing: 0.5px;
+                        line-height: 1.2;
                     }
 
                     .form-section .input-group {
-                        margin-bottom: 9px;
+                        width: 100%;
+                        box-sizing: border-box;
+                        margin-bottom: 7px;
                         display: flex;
                         flex-direction: column;
-                        gap: 3px;
+                        gap: 2px;
                     }
                     .form-section .input-group label {
-                        font-size: 10px;
+                        font-size: 9.5px;
                         font-weight: 700;
                         color: var(--hel-color-muted);
                         text-transform: uppercase;
                     }
 
-                    /* 16px FONT-SIZE: Universal fix preventing mobile Safari auto-zoom */
+                    /* STRICT BORDER-BOX: Guarantees zero right-border overflow */
                     .form-section .input-group input {
+                        display: block;
                         width: 100%;
-                        padding: 8px 10px;
+                        max-width: 100%;
+                        box-sizing: border-box;
+                        margin: 0;
+                        padding: 6px 9px;
                         border: 1.5px solid var(--hel-color-border);
                         border-radius: 5px;
-                        font-size: 16px;
+                        font-size: 13px;
+                        line-height: 1.3;
                         color: var(--hel-color-text);
                         outline: none;
-                        -webkit-appearance: none;
+                        appearance: none;
                     }
                     .form-section .input-group input:focus {
                         border-color: var(--hel-color-foreground);
@@ -633,17 +651,22 @@
                     }
 
                     .form-section .btn-stack {
+                        width: 100%;
+                        box-sizing: border-box;
                         display: flex;
                         flex-direction: column;
-                        gap: 7px;
-                        margin-top: 11px;
+                        gap: 6px;
+                        margin-top: 8px;
                     }
                     .form-section .action-label-btn {
                         display: block;
                         width: 100%;
+                        max-width: 100%;
+                        box-sizing: border-box;
+                        margin: 0;
                         text-align: center;
-                        padding: 8.5px;
-                        font-size: 11px;
+                        padding: 7.5px;
+                        font-size: 10.5px;
                         font-weight: 800;
                         text-transform: uppercase;
                         letter-spacing: 0.8px;
@@ -662,7 +685,8 @@
                         background: var(--hel-color-danger-bg);
                         color: var(--hel-color-danger);
                         border: 1px dashed var(--hel-color-danger-border);
-                        font-size: 10px;
+                        font-size: 9.5px;
+                        padding: 6.5px;
                     }
 
                     #state-success:checked ~ .stage-viewport .canvas-card {
