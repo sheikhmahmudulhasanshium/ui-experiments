@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Configurable Modular Helicopter Login</title>
 </head>
 
@@ -33,28 +33,28 @@
         --hel-sky-bot: #e0f2fe;
 
         /* 5. Rotor Speeds (Observable) */
-        --hel-speed: 1;                     /* Master speed multiplier (1 = default, 2 = 2x faster) */
+        --hel-speed: 1;
         --hel-rotor-main-speed: calc(0.42s / var(--hel-speed));
         --hel-rotor-tail-speed: calc(0.22s / var(--hel-speed));
     }
 
-    /* ================= BASE RESET & AMBIENT STYLING ================= */
-    * {
-        box-sizing: border-box;
+    /* ================= MOBILE VIEWPORT LOCK ================= */
+    html, body {
+        width: 100%;
+        height: 100%;
+        height: 100dvh;
         margin: 0;
         padding: 0;
+        overflow: hidden;
+        position: fixed; /* Prevents mobile scroll shifts on reload & button press */
+        inset: 0;
+        -webkit-text-size-adjust: 100%;
+        touch-action: manipulation;
     }
 
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        min-height: 100vh;
-        min-height: 100dvh;
         background: linear-gradient(180deg, var(--hel-sky-top) 0%, var(--hel-sky-mid) 60%, var(--hel-sky-bot) 100%);
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
     }
 
     /* Ambient Clouds */
@@ -75,9 +75,23 @@
     .cloud-2 { width: 440px; height: 100px; top: 35%; right: -5%; opacity: 0.6; }
     .cloud-3 { width: 260px; height: 70px; bottom: 10%; left: 10%; opacity: 0.7; }
 
-    /* State Machine Radios */
+    /* Pure CSS State Radios */
     input[type="radio"].state-toggle {
         display: none;
+    }
+
+    /* Dedicated Stage: Clips 160vw animation so mobile page width never expands */
+    .stage-viewport {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        pointer-events: none;
     }
 
     /* Master Flight Animations */
@@ -112,9 +126,8 @@
         flex-direction: column;
         align-items: center;
         position: relative;
-        z-index: 10;
         transform-origin: center center;
-        animation: flyInFromRight calc(2.8s / var(--hel-speed)) cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
+        pointer-events: auto;
     }
 
     .container-hover-wrapper {
@@ -122,10 +135,9 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        animation: hoverSway calc(3s / var(--hel-speed)) ease-in-out infinite calc(2.8s / var(--hel-speed));
     }
 
-    /* Responsive Scaling */
+    /* Responsive scale */
     @media (max-width: 480px) {
         .container { transform: scale(0.85); }
     }
@@ -136,60 +148,81 @@
         .container { transform: scale(0.68); }
     }
 
-    /* State Switch Actions */
-    #state-success:checked ~ .container {
+    /* ================= STATE SWITCH TRIGGERS ================= */
+    #state-flyin:checked ~ .stage-viewport .container {
+        animation: flyInFromRight calc(2.8s / var(--hel-speed)) cubic-bezier(0.25, 0.9, 0.3, 1) forwards;
+    }
+    #state-flyin:checked ~ .stage-viewport .container .container-hover-wrapper {
+        animation: hoverSway calc(3s / var(--hel-speed)) ease-in-out infinite calc(2.8s / var(--hel-speed));
+    }
+
+    #state-success:checked ~ .stage-viewport .container {
         animation: flyOutToLeft calc(2.2s / var(--hel-speed)) cubic-bezier(0.55, 0.05, 0.3, 1) forwards !important;
     }
-    #state-fail:checked ~ .container {
+
+    #state-fail:checked ~ .stage-viewport .container {
         animation: chopperCrash calc(2.8s / var(--hel-speed)) cubic-bezier(0.35, 0, 0.65, 1) forwards !important;
     }
 </style>
 
 <body>
 
-    <!-- Pure CSS Radios -->
-    <input type="radio" name="sim-state" id="state-flyin" class="state-toggle" checked>
-    <input type="radio" name="sim-state" id="state-success" class="state-toggle">
-    <input type="radio" name="sim-state" id="state-fail" class="state-toggle">
+    <!-- State Radios (autocomplete="off" stops mobile browsers from persisting crash state on page reload) -->
+    <input type="radio" name="sim-state" id="state-flyin" class="state-toggle" checked autocomplete="off">
+    <input type="radio" name="sim-state" id="state-success" class="state-toggle" autocomplete="off">
+    <input type="radio" name="sim-state" id="state-fail" class="state-toggle" autocomplete="off">
 
-    <!-- Sky Backdrop -->
+    <!-- Ambient Sky -->
     <div class="sky-bg">
         <div class="cloud cloud-1"></div>
         <div class="cloud cloud-2"></div>
         <div class="cloud cloud-3"></div>
     </div>
 
-    <!-- ================= 0. NAVBAR SECTION ================= -->
+    <!-- ================= 0. NAVBAR SECTION (MOBILE PROTECTED) ================= -->
     <style>
         .navbar-section {
             position: fixed;
+            /* Safe area for mobile notch / dynamic island */
             top: 12px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: calc(12px + env(safe-area-inset-top, 0px));
+            /* CENTERED WITHOUT TRANSFORM: fixes WebKit fixed-position vanishing bug */
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            width: -moz-fit-content;
+            width: fit-content;
+            max-width: calc(100vw - 24px);
+
             display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 6px;
-            background: rgba(15, 23, 42, 0.88);
-            backdrop-filter: blur(10px);
-            padding: 6px 10px;
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 5px 8px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            z-index: 9999;
-            max-width: 95vw;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            z-index: 999999;
+            touch-action: manipulation;
         }
 
         .navbar-section .nav-btn {
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            padding: 5px 12px;
+            letter-spacing: 0.5px;
+            padding: 6px 12px;
             border-radius: 999px;
             cursor: pointer;
             color: #94a3b8;
             white-space: nowrap;
             transition: all 0.2s ease;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .navbar-section .nav-btn:hover {
@@ -213,438 +246,474 @@
             color: var(--hel-color-canvas);
             box-shadow: 0 0 10px var(--hel-color-danger);
         }
+
+        /* Mobile compact styling */
+        @media (max-width: 420px) {
+            .navbar-section {
+                padding: 4px 6px;
+                gap: 4px;
+            }
+            .navbar-section .nav-btn {
+                font-size: 10.5px;
+                padding: 6px 10px;
+            }
+            .navbar-section .nav-btn .detail-text {
+                display: none;
+            }
+        }
     </style>
 
     <nav class="navbar-section">
         <label for="state-flyin" class="nav-btn">🔄 Reset</label>
-        <label for="state-success" class="nav-btn">✅ Success (Fly Left)</label>
-        <label for="state-fail" class="nav-btn">💥 Fail (Crash)</label>
+        <label for="state-success" class="nav-btn">✅ Success<span class="detail-text"> (Fly Left)</span></label>
+        <label for="state-fail" class="nav-btn">💥 Fail<span class="detail-text"> (Crash)</span></label>
     </nav>
 
-    <!-- ================= MASTER AIRBORNE RIG CONTAINER ================= -->
-    <div class="container">
-        <div class="container-hover-wrapper">
+    <!-- ================= STAGE VIEWPORT (CLIPS 160VW HORIZONTAL EXPANSION) ================= -->
+    <div class="stage-viewport">
+        <div class="container">
+            <div class="container-hover-wrapper">
 
-            <!-- 1. HELICOPTER STYLE -->
-            <style>
-                .helecopter-section {
-                    width: 320px;
-                    height: 120px;
-                    position: relative;
-                    display: block;
-                    margin: 0;
-                    padding: 0;
-                    line-height: 0;
-                    overflow: visible;
-                }
+                <!-- 1. HELICOPTER STYLE -->
+                <style>
+                    .helecopter-section {
+                        width: 320px;
+                        height: 120px;
+                        position: relative;
+                        display: block;
+                        margin: 0;
+                        padding: 0;
+                        line-height: 0;
+                        overflow: visible;
+                    }
 
-                .helecopter-section .chopper-svg {
-                    width: 320px;
-                    height: 120px;
-                    display: block;
-                    overflow: visible;
-                }
+                    .helecopter-section .chopper-svg {
+                        width: 320px;
+                        height: 120px;
+                        display: block;
+                        overflow: visible;
+                    }
 
-                @keyframes spinBlade {
-                    from { transform: rotate(0deg); }
-                    to   { transform: rotate(360deg); }
-                }
+                    @keyframes spinBlade {
+                        from { transform: rotate(0deg); }
+                        to   { transform: rotate(360deg); }
+                    }
 
-                .helecopter-section .main-blade-spin {
-                    animation: spinBlade var(--hel-rotor-main-speed) linear infinite;
-                    transform-box: fill-box;
-                    transform-origin: center;
-                }
+                    .helecopter-section .main-blade-spin {
+                        animation: spinBlade var(--hel-rotor-main-speed) linear infinite;
+                        transform-box: fill-box;
+                        transform-origin: center;
+                    }
 
-                .helecopter-section .tail-blade-spin {
-                    animation: spinBlade var(--hel-rotor-tail-speed) linear infinite;
-                    transform-box: fill-box;
-                    transform-origin: center;
-                }
+                    .helecopter-section .tail-blade-spin {
+                        animation: spinBlade var(--hel-rotor-tail-speed) linear infinite;
+                        transform-box: fill-box;
+                        transform-origin: center;
+                    }
 
-                @keyframes billowSmoke {
-                    0%   { opacity: 0; transform: translate(0, 0) scale(0.3); }
-                    50%  { opacity: 0.9; }
-                    100% { opacity: 0; transform: translate(-60px, -120px) scale(3.5); }
-                }
+                    @keyframes billowSmoke {
+                        0%   { opacity: 0; transform: translate(0, 0) scale(0.3); }
+                        50%  { opacity: 0.9; }
+                        100% { opacity: 0; transform: translate(-60px, -120px) scale(3.5); }
+                    }
 
-                .helecopter-section .smoke-puff {
-                    position: absolute;
-                    top: 25px;
-                    left: 195px;
-                    width: 22px;
-                    height: 22px;
-                    border-radius: 50%;
-                    background: radial-gradient(circle, var(--hel-color-muted) 0%, rgba(30,41,59,0) 80%);
-                    opacity: 0;
-                    pointer-events: none;
-                }
+                    .helecopter-section .smoke-puff {
+                        position: absolute;
+                        top: 25px;
+                        left: 195px;
+                        width: 22px;
+                        height: 22px;
+                        border-radius: 50%;
+                        background: radial-gradient(circle, var(--hel-color-muted) 0%, rgba(30,41,59,0) 80%);
+                        opacity: 0;
+                        pointer-events: none;
+                    }
 
-                #state-fail:checked ~ .container .smoke-1 { animation: billowSmoke 0.9s ease-out infinite; }
-                #state-fail:checked ~ .container .smoke-2 { animation: billowSmoke 0.9s ease-out infinite 0.3s; }
-                #state-fail:checked ~ .container .smoke-3 { animation: billowSmoke 0.9s ease-out infinite 0.6s; }
-                #state-fail:checked ~ .container .main-blade-spin { animation-duration: 0.9s; }
-                #state-fail:checked ~ .container .strobe-beacon { 
-                    fill: var(--hel-color-danger) !important; 
-                    filter: drop-shadow(0 0 8px var(--hel-color-danger)); 
-                }
-            </style>
+                    #state-fail:checked ~ .stage-viewport .smoke-1 { animation: billowSmoke 0.9s ease-out infinite; }
+                    #state-fail:checked ~ .stage-viewport .smoke-2 { animation: billowSmoke 0.9s ease-out infinite 0.3s; }
+                    #state-fail:checked ~ .stage-viewport .smoke-3 { animation: billowSmoke 0.9s ease-out infinite 0.6s; }
+                    #state-fail:checked ~ .stage-viewport .main-blade-spin { animation-duration: 0.9s; }
+                    #state-fail:checked ~ .stage-viewport .strobe-beacon { 
+                        fill: var(--hel-color-danger) !important; 
+                        filter: drop-shadow(0 0 8px var(--hel-color-danger)); 
+                    }
+                </style>
 
-            <!-- 1. HELICOPTER SECTION -->
-            <section class="helecopter-section">
-                <div class="smoke-puff smoke-1"></div>
-                <div class="smoke-puff smoke-2"></div>
-                <div class="smoke-puff smoke-3"></div>
+                <!-- 1. HELICOPTER SECTION -->
+                <section class="helecopter-section">
+                    <div class="smoke-puff smoke-1"></div>
+                    <div class="smoke-puff smoke-2"></div>
+                    <div class="smoke-puff smoke-3"></div>
 
-                <svg class="chopper-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="fuselage" x1="120" y1="40" x2="160" y2="105" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="var(--hel-color-primary)" />
-                            <stop offset="100%" stop-color="var(--hel-color-background)" />
-                        </linearGradient>
-                        <linearGradient id="windshield" x1="110" y1="50" x2="155" y2="90" gradientUnits="userSpaceOnUse">
-                            <stop offset="0%" stop-color="var(--hel-color-foreground)" stop-opacity="0.9" />
-                            <stop offset="100%" stop-color="var(--hel-color-background)" />
-                        </linearGradient>
-                    </defs>
+                    <!-- 1:1 PIXEL MAP -->
+                    <svg class="chopper-svg" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="fuselage" x1="120" y1="40" x2="160" y2="105" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="var(--hel-color-primary)" />
+                                <stop offset="100%" stop-color="var(--hel-color-background)" />
+                            </linearGradient>
+                            <linearGradient id="windshield" x1="110" y1="50" x2="155" y2="90" gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="var(--hel-color-foreground)" stop-opacity="0.9" />
+                                <stop offset="100%" stop-color="var(--hel-color-background)" />
+                            </linearGradient>
+                        </defs>
 
-                    <!-- Far Skid (Back Leg) -->
-                    <g opacity="0.65">
-                        <path d="M140 92 L132 110" stroke="var(--hel-color-primary)" stroke-width="3.5" stroke-linecap="round"/>
-                        <path d="M185 90 L177 110" stroke="var(--hel-color-primary)" stroke-width="3.5" stroke-linecap="round"/>
-                        <path d="M105 106 Q 112 110, 120 110 L 210 110" stroke="var(--hel-color-primary)" stroke-width="4" stroke-linecap="round"/>
-                    </g>
+                        <!-- Far Skid (Back Leg) -->
+                        <g opacity="0.65">
+                            <path d="M140 92 L132 110" stroke="var(--hel-color-primary)" stroke-width="3.5" stroke-linecap="round"/>
+                            <path d="M185 90 L177 110" stroke="var(--hel-color-primary)" stroke-width="3.5" stroke-linecap="round"/>
+                            <path d="M105 106 Q 112 110, 120 110 L 210 110" stroke="var(--hel-color-primary)" stroke-width="4" stroke-linecap="round"/>
+                        </g>
 
-                    <!-- Tail Boom & Fin -->
-                    <path d="M195 68 L282 52 L282 60 L190 82 Z" fill="var(--hel-color-primary)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
-                    <path d="M250 58 L272 60 L270 64 L248 61 Z" fill="var(--hel-color-primary)"/>
-                    <path d="M280 58 L294 22 L304 22 L290 64 L282 62 Z" fill="var(--hel-color-primary)" stroke="var(--hel-color-background)" stroke-width="1"/>
+                        <!-- Tail Boom & Fin -->
+                        <path d="M195 68 L282 52 L282 60 L190 82 Z" fill="var(--hel-color-primary)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
+                        <path d="M250 58 L272 60 L270 64 L248 61 Z" fill="var(--hel-color-primary)"/>
+                        <path d="M280 58 L294 22 L304 22 L290 64 L282 62 Z" fill="var(--hel-color-primary)" stroke="var(--hel-color-background)" stroke-width="1"/>
 
-                    <!-- Flat Flower Tail Rotor -->
-                    <g transform="translate(296, 30)">
-                        <circle cx="0" cy="0" r="15" fill="var(--hel-color-background)" opacity="0.2"/>
-                        
-                        <g class="tail-blade-spin">
-                            <line x1="-15" y1="0" x2="15" y2="0" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
-                            <line x1="0" y1="-15" x2="0" y2="15" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
+                        <!-- Flat Flower Tail Rotor -->
+                        <g transform="translate(296, 30)">
+                            <circle cx="0" cy="0" r="15" fill="var(--hel-color-background)" opacity="0.2"/>
                             
-                            <circle cx="-13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
-                            <circle cx="13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
-                            <circle cx="0" cy="-13" r="1.8" fill="var(--hel-color-secondary)"/>
-                            <circle cx="0" cy="13" r="1.8" fill="var(--hel-color-secondary)"/>
+                            <g class="tail-blade-spin">
+                                <line x1="-15" y1="0" x2="15" y2="0" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
+                                <line x1="0" y1="-15" x2="0" y2="15" stroke="var(--hel-color-background)" stroke-width="3.2" stroke-linecap="round"/>
+                                
+                                <circle cx="-13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
+                                <circle cx="13" cy="0" r="1.8" fill="var(--hel-color-secondary)"/>
+                                <circle cx="0" cy="-13" r="1.8" fill="var(--hel-color-secondary)"/>
+                                <circle cx="0" cy="13" r="1.8" fill="var(--hel-color-secondary)"/>
+                            </g>
+
+                            <circle cx="0" cy="0" r="3.6" fill="var(--hel-color-primary)"/>
+                            <circle cx="0" cy="0" r="1.8" fill="var(--hel-color-foreground)"/>
                         </g>
 
-                        <circle cx="0" cy="0" r="3.6" fill="var(--hel-color-primary)"/>
-                        <circle cx="0" cy="0" r="1.8" fill="var(--hel-color-foreground)"/>
-                    </g>
+                        <!-- Fuselage Body -->
+                        <path d="M102 82 C 98 68, 108 55, 128 50 C 146 45, 172 45, 196 54 C 202 56, 206 63, 198 79 C 192 94, 174 103, 142 103 C 116 103, 104 92, 102 82 Z" 
+                              fill="url(#fuselage)" stroke="var(--hel-color-background)" stroke-width="1.5"/>
 
-                    <!-- Fuselage Body -->
-                    <path d="M102 82 C 98 68, 108 55, 128 50 C 146 45, 172 45, 196 54 C 202 56, 206 63, 198 79 C 192 94, 174 103, 142 103 C 116 103, 104 92, 102 82 Z" 
-                          fill="url(#fuselage)" stroke="var(--hel-color-background)" stroke-width="1.5"/>
+                        <!-- Engine Doghouse -->
+                        <path d="M150 48 C 154 40, 172 38, 190 45 C 198 48, 200 53, 192 56 Z" fill="var(--hel-color-primary)"/>
+                        <ellipse cx="192" cy="52" rx="4" ry="2.5" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
 
-                    <!-- Engine Doghouse -->
-                    <path d="M150 48 C 154 40, 172 38, 190 45 C 198 48, 200 53, 192 56 Z" fill="var(--hel-color-primary)"/>
-                    <ellipse cx="192" cy="52" rx="4" ry="2.5" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
+                        <!-- Cockpit -->
+                        <path d="M106 80 C 103 69, 112 56, 128 52 C 146 48, 162 50, 167 60 C 170 67, 169 79, 158 86 C 145 92, 117 92, 107 86 Z" 
+                              fill="url(#windshield)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
+                        <path d="M135 52 C 136 65, 135 76, 132 89" stroke="var(--hel-color-primary)" stroke-width="2"/>
 
-                    <!-- Cockpit -->
-                    <path d="M106 80 C 103 69, 112 56, 128 52 C 146 48, 162 50, 167 60 C 170 67, 169 79, 158 86 C 145 92, 117 92, 107 86 Z" 
-                          fill="url(#windshield)" stroke="var(--hel-color-background)" stroke-width="1.2"/>
-                    <path d="M135 52 C 136 65, 135 76, 132 89" stroke="var(--hel-color-primary)" stroke-width="2"/>
+                        <!-- Foreground Skid (Front Leg - Matches back leg) -->
+                        <path d="M132 94 L120 119" stroke="var(--hel-color-primary)" stroke-width="4.5" stroke-linecap="round"/>
+                        <path d="M174 93 L200 119" stroke="var(--hel-color-primary)" stroke-width="4.5" stroke-linecap="round"/>
+                        <path d="M92 113 Q 102 119, 115 119 L 225 119" stroke="var(--hel-color-primary)" stroke-width="5" stroke-linecap="round"/>
+                        <circle cx="92" cy="113" r="2.5" fill="var(--hel-color-background)"/>
+                        <circle cx="225" cy="119" r="2.5" fill="var(--hel-color-background)"/>
 
-                    <!-- Foreground Skid (Front Leg - Matches back leg) -->
-                    <path d="M132 94 L120 119" stroke="var(--hel-color-primary)" stroke-width="4.5" stroke-linecap="round"/>
-                    <path d="M174 93 L200 119" stroke="var(--hel-color-primary)" stroke-width="4.5" stroke-linecap="round"/>
-                    <path d="M92 113 Q 102 119, 115 119 L 225 119" stroke="var(--hel-color-primary)" stroke-width="5" stroke-linecap="round"/>
-                    <circle cx="92" cy="113" r="2.5" fill="var(--hel-color-background)"/>
-                    <circle cx="225" cy="119" r="2.5" fill="var(--hel-color-background)"/>
+                        <!-- Strobe Beacon -->
+                        <circle class="strobe-beacon" cx="295" cy="22" r="3" fill="var(--hel-color-secondary)"/>
 
-                    <!-- Strobe Beacon -->
-                    <circle class="strobe-beacon" cx="295" cy="22" r="3" fill="var(--hel-color-secondary)"/>
+                        <!-- Rotor Mast -->
+                        <rect x="162" y="24" width="5" height="20" fill="var(--hel-color-primary)"/>
 
-                    <!-- Rotor Mast -->
-                    <rect x="162" y="24" width="5" height="20" fill="var(--hel-color-primary)"/>
-
-                    <!-- Observable Main Rotor Blades -->
-                    <g transform="translate(164, 22) scale(1, 0.22)">
-                        <g class="main-blade-spin">
-                            <line x1="-125" y1="0" x2="125" y2="0" stroke="var(--hel-color-background)" stroke-width="5.5" stroke-linecap="round"/>
-                            <line x1="0" y1="-125" x2="0" y2="125" stroke="var(--hel-color-background)" stroke-width="5.5" stroke-linecap="round"/>
-                            <line x1="-125" y1="0" x2="-105" y2="0" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
-                            <line x1="105" y1="0" x2="125" y2="0" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
-                            <line x1="0" y1="-125" x2="0" y2="-105" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
-                            <line x1="0" y1="105" x2="0" y2="125" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
+                        <!-- Observable Main Blades -->
+                        <g transform="translate(164, 22) scale(1, 0.22)">
+                            <g class="main-blade-spin">
+                                <line x1="-125" y1="0" x2="125" y2="0" stroke="var(--hel-color-background)" stroke-width="5.5" stroke-linecap="round"/>
+                                <line x1="0" y1="-125" x2="0" y2="125" stroke="var(--hel-color-background)" stroke-width="5.5" stroke-linecap="round"/>
+                                <line x1="-125" y1="0" x2="-105" y2="0" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
+                                <line x1="105" y1="0" x2="125" y2="0" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
+                                <line x1="0" y1="-125" x2="0" y2="-105" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
+                                <line x1="0" y1="105" x2="0" y2="125" stroke="var(--hel-color-secondary)" stroke-width="5.5"/>
+                            </g>
+                            <circle cx="0" cy="0" r="12" fill="var(--hel-color-primary)"/>
+                            <circle cx="0" cy="0" r="5" fill="var(--hel-color-foreground)"/>
                         </g>
-                        <circle cx="0" cy="0" r="12" fill="var(--hel-color-primary)"/>
-                        <circle cx="0" cy="0" r="5" fill="var(--hel-color-foreground)"/>
-                    </g>
-                </svg>
-            </section>
+                    </svg>
+                </section>
 
-            <!-- 2. LADDER STYLE -->
-            <style>
-                .ladder-section {
-                    width: 320px;
-                    height: 44px;
-                    position: relative;
-                    display: block;
-                    margin: 0;
-                    padding: 0;
-                    line-height: 0;
-                    z-index: 5;
-                }
+                <!-- 2. LADDER STYLE -->
+                <style>
+                    .ladder-section {
+                        width: 320px;
+                        height: 44px;
+                        position: relative;
+                        display: block;
+                        margin: 0;
+                        padding: 0;
+                        line-height: 0;
+                        z-index: 5;
+                    }
 
-                .ladder-section .ladder-svg {
-                    width: 320px;
-                    height: 44px;
-                    display: block;
-                }
-            </style>
+                    .ladder-section .ladder-svg {
+                        width: 320px;
+                        height: 44px;
+                        display: block;
+                    }
+                </style>
 
-            <!-- 2. LADDER SECTION -->
-            <section class="ladder-section">
-                <svg class="ladder-svg" viewBox="0 0 320 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="116" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
-                    <rect x="196" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
+                <!-- 2. LADDER SECTION -->
+                <section class="ladder-section">
+                    <svg class="ladder-svg" viewBox="0 0 320 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="116" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
+                        <rect x="196" y="0" width="8" height="5" rx="1" fill="var(--hel-color-background)" stroke="var(--hel-color-secondary)" stroke-width="1"/>
 
-                    <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
-                    <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
+                        <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
+                        <line x1="120" y1="2" x2="120" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
 
-                    <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
-                    <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
+                        <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-background)" stroke-width="2.8"/>
+                        <line x1="200" y1="2" x2="200" y2="40" stroke="var(--hel-color-secondary)" stroke-width="1.2" stroke-dasharray="4,2"/>
 
-                    <g stroke-linecap="round">
-                        <line x1="116" y1="14" x2="204" y2="14" stroke="var(--hel-color-background)" stroke-width="3"/>
-                        <line x1="118" y1="14" x2="202" y2="14" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
+                        <g stroke-linecap="round">
+                            <line x1="116" y1="14" x2="204" y2="14" stroke="var(--hel-color-background)" stroke-width="3"/>
+                            <line x1="118" y1="14" x2="202" y2="14" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
 
-                        <line x1="116" y1="26" x2="204" y2="26" stroke="var(--hel-color-background)" stroke-width="3"/>
-                        <line x1="118" y1="26" x2="202" y2="26" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
-                    </g>
+                            <line x1="116" y1="26" x2="204" y2="26" stroke="var(--hel-color-background)" stroke-width="3"/>
+                            <line x1="118" y1="26" x2="202" y2="26" stroke="var(--hel-color-secondary)" stroke-width="1.6"/>
+                        </g>
 
-                    <circle cx="120" cy="40" r="3.5" fill="none" stroke="var(--hel-color-background)" stroke-width="2"/>
-                    <circle cx="120" cy="40" r="1.5" fill="var(--hel-color-secondary)"/>
+                        <circle cx="120" cy="40" r="3.5" fill="none" stroke="var(--hel-color-background)" stroke-width="2"/>
+                        <circle cx="120" cy="40" r="1.5" fill="var(--hel-color-secondary)"/>
 
-                    <circle cx="200" cy="40" r="3.5" fill="none" stroke="var(--hel-color-background)" stroke-width="2"/>
-                    <circle cx="200" cy="40" r="1.5" fill="var(--hel-color-secondary)"/>
-                </svg>
-            </section>
+                        <circle cx="200" cy="40" r="3.5" fill="none" stroke="var(--hel-color-background)" stroke-width="2"/>
+                        <circle cx="200" cy="40" r="1.5" fill="var(--hel-color-secondary)"/>
+                    </svg>
+                </section>
 
-            <!-- 3. FORM STYLE -->
-            <style>
-                .form-section {
-                    width: 320px;
-                    position: relative;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    margin-top: -1px;
-                    z-index: 6;
-                }
+                <!-- 3. FORM STYLE -->
+                <style>
+                    .form-section {
+                        width: 320px;
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        margin-top: -1px;
+                        z-index: 6;
+                    }
 
-                .form-section .hanger-beam {
-                    width: 280px;
-                    height: 8px;
-                    background: linear-gradient(180deg, var(--hel-color-muted) 0%, var(--hel-color-primary) 100%);
-                    border-radius: 4px;
-                    position: relative;
-                    z-index: 5;
-                    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-                }
+                    .form-section .hanger-beam {
+                        width: 280px;
+                        height: 8px;
+                        background: linear-gradient(180deg, var(--hel-color-muted) 0%, var(--hel-color-primary) 100%);
+                        border-radius: 4px;
+                        position: relative;
+                        z-index: 5;
+                        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+                    }
 
-                .form-section .beam-cap {
-                    position: absolute;
-                    top: -2px;
-                    width: 12px;
-                    height: 12px;
-                    background: var(--hel-color-secondary);
-                    border-radius: 50%;
-                    border: 2px solid var(--hel-color-background);
-                    transform: translateX(-50%);
-                }
-                .form-section .beam-cap-left  { left: 100px; }
-                .form-section .beam-cap-right { left: 180px; }
+                    .form-section .beam-cap {
+                        position: absolute;
+                        top: -2px;
+                        width: 12px;
+                        height: 12px;
+                        background: var(--hel-color-secondary);
+                        border-radius: 50%;
+                        border: 2px solid var(--hel-color-background);
+                        transform: translateX(-50%);
+                    }
+                    .form-section .beam-cap-left  { left: 100px; }
+                    .form-section .beam-cap-right { left: 180px; }
 
-                @keyframes unrollCanvasSheet {
-                    0%   { clip-path: inset(0 0 100% 0); opacity: 0.9; }
-                    85%  { clip-path: inset(0 0 -6px 0); }
-                    100% { clip-path: inset(0 0 0% 0); opacity: 1; }
-                }
+                    @keyframes unrollCanvasSheet {
+                        0%   { clip-path: inset(0 0 100% 0); opacity: 0.9; }
+                        85%  { clip-path: inset(0 0 -6px 0); }
+                        100% { clip-path: inset(0 0 0% 0); opacity: 1; }
+                    }
 
-                @keyframes unrollBottomRod {
-                    0%   { transform: translateY(0px); }
-                    85%  { transform: translateY(296px); }
-                    100% { transform: translateY(290px); }
-                }
+                    @keyframes unrollBottomRod {
+                        0%   { transform: translateY(0px); }
+                        85%  { transform: translateY(296px); }
+                        100% { transform: translateY(290px); }
+                    }
 
-                .form-section .canvas-card {
-                    width: 270px;
-                    height: 290px;
-                    background: var(--hel-color-canvas);
-                    border: 2px solid var(--hel-color-primary);
-                    border-top: none;
-                    padding: 16px 16px 14px;
-                    box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2);
-                    position: relative;
-                    z-index: 2;
+                    .form-section .canvas-card {
+                        width: 270px;
+                        height: 290px;
+                        background: var(--hel-color-canvas);
+                        border: 2px solid var(--hel-color-primary);
+                        border-top: none;
+                        padding: 16px 16px 14px;
+                        box-shadow: 0 15px 30px rgba(15, 23, 42, 0.2);
+                        position: relative;
+                        z-index: 2;
+                        clip-path: inset(0 0 100% 0);
+                    }
 
-                    clip-path: inset(0 0 100% 0);
-                    animation: unrollCanvasSheet calc(1.2s / var(--hel-speed)) cubic-bezier(0.35, 0.05, 0.2, 1) calc(2.6s / var(--hel-speed)) forwards;
-                }
+                    .form-section .roller-rod {
+                        width: 280px;
+                        height: 10px;
+                        background: linear-gradient(180deg, var(--hel-color-muted) 0%, var(--hel-color-background) 100%);
+                        border-radius: 5px;
+                        position: absolute;
+                        top: -2px;
+                        z-index: 4;
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+                        transform: translateY(0px);
+                    }
 
-                .form-section .roller-rod {
-                    width: 280px;
-                    height: 10px;
-                    background: linear-gradient(180deg, var(--hel-color-muted) 0%, var(--hel-color-background) 100%);
-                    border-radius: 5px;
-                    position: absolute;
-                    top: -2px;
-                    z-index: 4;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+                    /* Replay Unroll on Reset */
+                    #state-flyin:checked ~ .stage-viewport .canvas-card {
+                        animation: unrollCanvasSheet calc(1.2s / var(--hel-speed)) cubic-bezier(0.35, 0.05, 0.2, 1) calc(2.6s / var(--hel-speed)) forwards;
+                    }
+                    #state-flyin:checked ~ .stage-viewport .roller-rod {
+                        animation: unrollBottomRod calc(1.2s / var(--hel-speed)) cubic-bezier(0.35, 0.05, 0.2, 1) calc(2.6s / var(--hel-speed)) forwards;
+                    }
 
-                    animation: unrollBottomRod calc(1.2s / var(--hel-speed)) cubic-bezier(0.35, 0.05, 0.2, 1) calc(2.6s / var(--hel-speed)) forwards;
-                }
-                .form-section .roller-rod::before,
-                .form-section .roller-rod::after {
-                    content: '';
-                    position: absolute;
-                    top: -2px;
-                    width: 14px;
-                    height: 14px;
-                    background: var(--hel-color-secondary);
-                    border: 2px solid var(--hel-color-background);
-                    border-radius: 50%;
-                }
-                .form-section .roller-rod::before { left: -4px; }
-                .form-section .roller-rod::after  { right: -4px; }
+                    #state-success:checked ~ .stage-viewport .canvas-card,
+                    #state-fail:checked ~ .stage-viewport .canvas-card {
+                        clip-path: inset(0 0 0% 0);
+                    }
+                    #state-success:checked ~ .stage-viewport .roller-rod,
+                    #state-fail:checked ~ .stage-viewport .roller-rod {
+                        transform: translateY(290px);
+                    }
 
-                .form-section .form-header {
-                    text-align: center;
-                    margin-bottom: 12px;
-                }
-                .form-section .badge {
-                    display: inline-block;
-                    font-size: 9px;
-                    font-weight: 800;
-                    letter-spacing: 1.2px;
-                    color: var(--hel-color-foreground);
-                    background: var(--hel-sky-bot);
-                    padding: 2px 8px;
-                    border-radius: 10px;
-                    margin-bottom: 4px;
-                }
-                .form-section .form-title {
-                    font-size: 17px;
-                    font-weight: 900;
-                    color: var(--hel-color-text);
-                    letter-spacing: 0.5px;
-                }
+                    .form-section .roller-rod::before,
+                    .form-section .roller-rod::after {
+                        content: '';
+                        position: absolute;
+                        top: -2px;
+                        width: 14px;
+                        height: 14px;
+                        background: var(--hel-color-secondary);
+                        border: 2px solid var(--hel-color-background);
+                        border-radius: 50%;
+                    }
+                    .form-section .roller-rod::before { left: -4px; }
+                    .form-section .roller-rod::after  { right: -4px; }
 
-                .form-section .input-group {
-                    margin-bottom: 9px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 3px;
-                }
-                .form-section .input-group label {
-                    font-size: 10px;
-                    font-weight: 700;
-                    color: var(--hel-color-muted);
-                    text-transform: uppercase;
-                }
-                .form-section .input-group input {
-                    width: 100%;
-                    padding: 8px 10px;
-                    border: 1.5px solid var(--hel-color-border);
-                    border-radius: 5px;
-                    font-size: 12px;
-                    color: var(--hel-color-text);
-                    outline: none;
-                }
-                .form-section .input-group input:focus {
-                    border-color: var(--hel-color-foreground);
-                    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
-                }
+                    .form-section .form-header {
+                        text-align: center;
+                        margin-bottom: 12px;
+                    }
+                    .form-section .badge {
+                        display: inline-block;
+                        font-size: 9px;
+                        font-weight: 800;
+                        letter-spacing: 1.2px;
+                        color: var(--hel-color-foreground);
+                        background: var(--hel-sky-bot);
+                        padding: 2px 8px;
+                        border-radius: 10px;
+                        margin-bottom: 4px;
+                    }
+                    .form-section .form-title {
+                        font-size: 17px;
+                        font-weight: 900;
+                        color: var(--hel-color-text);
+                        letter-spacing: 0.5px;
+                    }
 
-                .form-section .btn-stack {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 7px;
-                    margin-top: 11px;
-                }
-                .form-section .action-label-btn {
-                    display: block;
-                    width: 100%;
-                    text-align: center;
-                    padding: 8.5px;
-                    font-size: 11px;
-                    font-weight: 800;
-                    text-transform: uppercase;
-                    letter-spacing: 0.8px;
-                    border-radius: 5px;
-                    cursor: pointer;
-                    transition: all 0.2s ease;
-                    user-select: none;
-                }
-                .form-section .btn-login {
-                    background: var(--hel-color-foreground);
-                    color: var(--hel-color-primary);
-                    box-shadow: 0 3px 8px rgba(56, 189, 248, 0.35);
-                }
-                .form-section .btn-login:hover { filter: brightness(1.08); }
-                .form-section .btn-fail {
-                    background: var(--hel-color-danger-bg);
-                    color: var(--hel-color-danger);
-                    border: 1px dashed var(--hel-color-danger-border);
-                    font-size: 10px;
-                }
+                    .form-section .input-group {
+                        margin-bottom: 9px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 3px;
+                    }
+                    .form-section .input-group label {
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: var(--hel-color-muted);
+                        text-transform: uppercase;
+                    }
 
-                #state-success:checked ~ .container .canvas-card {
-                    border-color: var(--hel-color-success);
-                    box-shadow: 0 0 20px var(--hel-color-success);
-                }
-                #state-fail:checked ~ .container .canvas-card {
-                    border-color: var(--hel-color-danger);
-                    box-shadow: 0 0 20px var(--hel-color-danger);
-                }
-            </style>
+                    /* 16px FONT-SIZE: Universal fix preventing mobile Safari auto-zoom */
+                    .form-section .input-group input {
+                        width: 100%;
+                        padding: 8px 10px;
+                        border: 1.5px solid var(--hel-color-border);
+                        border-radius: 5px;
+                        font-size: 16px;
+                        color: var(--hel-color-text);
+                        outline: none;
+                        -webkit-appearance: none;
+                    }
+                    .form-section .input-group input:focus {
+                        border-color: var(--hel-color-foreground);
+                        box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+                    }
 
-            <!-- 3. FORM SECTION -->
-            <section class="form-section">
-                <div class="hanger-beam">
-                    <div class="beam-cap beam-cap-left"></div>
-                    <div class="beam-cap beam-cap-right"></div>
-                </div>
+                    .form-section .btn-stack {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 7px;
+                        margin-top: 11px;
+                    }
+                    .form-section .action-label-btn {
+                        display: block;
+                        width: 100%;
+                        text-align: center;
+                        padding: 8.5px;
+                        font-size: 11px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        letter-spacing: 0.8px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        user-select: none;
+                    }
+                    .form-section .btn-login {
+                        background: var(--hel-color-foreground);
+                        color: var(--hel-color-primary);
+                        box-shadow: 0 3px 8px rgba(56, 189, 248, 0.35);
+                    }
+                    .form-section .btn-login:hover { filter: brightness(1.08); }
+                    .form-section .btn-fail {
+                        background: var(--hel-color-danger-bg);
+                        color: var(--hel-color-danger);
+                        border: 1px dashed var(--hel-color-danger-border);
+                        font-size: 10px;
+                    }
 
-                <div class="canvas-card">
-                    <div class="form-header">
-                        <span class="badge">SECURE AIR-LINK</span>
-                        <h2 class="form-title">PILOT LOGIN</h2>
+                    #state-success:checked ~ .stage-viewport .canvas-card {
+                        border-color: var(--hel-color-success);
+                        box-shadow: 0 0 20px var(--hel-color-success);
+                    }
+                    #state-fail:checked ~ .stage-viewport .canvas-card {
+                        border-color: var(--hel-color-danger);
+                        box-shadow: 0 0 20px var(--hel-color-danger);
+                    }
+                </style>
+
+                <!-- 3. FORM SECTION -->
+                <section class="form-section">
+                    <div class="hanger-beam">
+                        <div class="beam-cap beam-cap-left"></div>
+                        <div class="beam-cap beam-cap-right"></div>
                     </div>
 
-                    <div class="login-inputs-wrapper">
-                        <div class="input-group">
-                            <label for="username">Callsign</label>
-                            <input type="text" id="username" placeholder="e.g. Maverick" autocomplete="off" value="Alpha-1">
+                    <div class="canvas-card">
+                        <div class="form-header">
+                            <span class="badge">SECURE AIR-LINK</span>
+                            <h2 class="form-title">PILOT LOGIN</h2>
                         </div>
 
-                        <div class="input-group">
-                            <label for="password">Security Code</label>
-                            <input type="password" id="password" placeholder="••••••••" value="12345678">
-                        </div>
+                        <div class="login-inputs-wrapper">
+                            <div class="input-group">
+                                <label for="username">Callsign</label>
+                                <input type="text" id="username" placeholder="e.g. Maverick" autocomplete="off" value="Alpha-1">
+                            </div>
 
-                        <div class="btn-stack">
-                            <label for="state-success" class="action-label-btn btn-login">
-                                Authenticate & Depart
-                            </label>
-                            <label for="state-fail" class="action-label-btn btn-fail">
-                                Simulate Wrong Password
-                            </label>
+                            <div class="input-group">
+                                <label for="password">Security Code</label>
+                                <input type="password" id="password" placeholder="••••••••" value="12345678">
+                            </div>
+
+                            <div class="btn-stack">
+                                <label for="state-success" class="action-label-btn btn-login">
+                                    Authenticate & Depart
+                                </label>
+                                <label for="state-fail" class="action-label-btn btn-fail">
+                                    Simulate Wrong Password
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="roller-rod"></div>
-            </section>
+                    <div class="roller-rod"></div>
+                </section>
 
+            </div>
         </div>
     </div>
 
