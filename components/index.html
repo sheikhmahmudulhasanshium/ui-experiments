@@ -1,16 +1,23 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBhbGV0dGUgcHJldmlldy1pY29uIj48cGF0aCBkPSJNMTIgMjJhMSAxIDAgMCAxIDAtMjAgMTAgOSAwIDAgMSAxMCA5IDUgNSAwIDAgMS01IDVoLTIuMjVhMS43NSAxLjc1IDAgMCAwLTEuNCAyLjhsLjMuNGExLjc1IDEuNzUgMCAwIDEtMS40IDIuOHoiLz48Y2lyY2xlIGN4PSIxMy41IiBjeT0iNi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iMTcuNSIgY3k9IjEwLjUiIHI9Ii41IiBmaWxsPSJjdXJyZW50Q29sb3IiLz48Y2lyY2xlIGN4PSI2LjUiIGN5PSIxMi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iOC41IiBjeT0iNy41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+">
-    <title>Components | UI Ideas</title>
-    <style>
-        /* 1. FIXED: @import statements must be at the very top of your CSS */
-        @import url('https://googleapis.com/css?family=Roboto:400,700&display=swap');
-        @import url('https://googleapis.com/css?family=Pacifico:400&display=swap');
 
-        /* 2. Global Themes & Layout */
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xMiAyMmExMCAxMCAwIDEgMSAxMC05IDUgNSAwIDAgMS01IDVoLTIuMjVhMS43NSAxLjc1IDAgMCAwLTEuNCAyLjhsLjMuNGExLjc1IDEuNzUgMCAwIDEtMS40IDIuOHoiLz48L3N2Zz4=">
+
+    <title>Components | UI Ideas</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Pacifico&display=swap');
+
+        /* =================================
+           1. GLOBAL THEMES
+        ================================= */
+
         :root {
             --primary-color: #007BFF;
             --secondary-color: #6C757D;
@@ -23,6 +30,10 @@
             --secondary-color: #ADB5BD;
             --background-color: #212529;
             --text-color: #F8F9FA;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
@@ -41,15 +52,21 @@
             padding-inline: 20px;
         }
 
-        /* 3. Component Scoped Styles */
+
+        /* =================================
+           2. HEADER
+        ================================= */
+
         .header-section {
-            /* FIXED: Combined linear-gradient using 'background', added background-size */
+            position: relative;
+            z-index: 100;
             background: linear-gradient(
-                90deg, 
-                var(--primary-color) 25%, 
-                color-mix(in srgb, var(--primary-color) 70%, var(--background-color)) 50%, 
+                90deg,
+                var(--primary-color) 25%,
+                color-mix(in srgb, var(--primary-color) 70%, var(--background-color)) 50%,
                 var(--primary-color) 75%
-            );  
+            );
+
             background-size: 200% 100%;
             text-align: center;
             border-bottom: 1px solid var(--secondary-color);
@@ -61,149 +78,432 @@
                 justify-content: space-between;
                 padding-block: 10px;
             }
+        }
 
-            .header-logo {
+
+        /* =================================
+           3. HEADER LOGO
+        ================================= */
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+
+            .logo {
+                width: 44px;
+                height: 44px;
+                filter: brightness(0) invert(1);
+            }
+
+            .logo-text {
                 display: flex;
-                align-items: center;
-                justify-content: center;
-                gap: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2px;
 
-                .logo {
-                    width: 44px;
-                    height: 44px;
-                    filter: brightness(0) invert(1);
-                }
-.logo-text {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 2px;
-                    h1 {
+                h1 {
                     font-size: 2rem;
                     margin: 0;
                     font-weight: 700;
                     font-family: 'Pacifico', cursive;
-                    color: color-mix(in srgb, var(--background-color,#000) 50%, white);
-                    }
-                    small {
-                        font-size: 12px;
-                        font-weight: 400;
-                        word-spacing: 1.2px;
-                        letter-spacing: 1.5px;
-                        line-height: 1.5px;
-                        text-transform: uppercase;
-                        color: var(--secondary-color);
-                    }
+                    color: color-mix(in srgb, var(--background-color) 50%, white);
                 }
-                   
+
+                small {
+                    font-size: 12px;
+                    font-weight: 400;
+                    word-spacing: 1.2px;
+                    letter-spacing: 1.5px;
+                    line-height: 1.5;
+                    text-transform: uppercase;
+                    color: white;
+                }
+            }
+        }
+
+
+        /* =================================
+           4. HEADER BUTTONS
+        ================================= */
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            .btn,
+            .mode-toggle-label {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+
+                img {
+                    width: 24px;
+                    height: 24px;
+                    filter: brightness(0) invert(1);
+                }
+            }
+        }
+
+
+        /* =================================
+           5. CSS-ONLY DARK MODE
+        ================================= */
+
+        #mode-state-input {
+            display: none;
+        }
+
+        .mode-toggle-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+
+            .sun-icon {
+                display: block;
             }
 
-            .header-buttons {
+            .moon-icon {
+                display: none;
+            }
+        }
+
+        html:has(#mode-state-input:checked) .mode-toggle-label {
+            .sun-icon {
+                display: none;
+            }
+
+            .moon-icon {
+                display: block;
+            }
+        }
+
+
+        /* =================================
+           6. CSS-ONLY SIDEBAR
+        ================================= */
+
+        .sidebar-btn {
+            position: relative;
+
+            /* Hide checkbox but preserve functionality */
+            #sidebar-state-input {
+                position: absolute;
+                opacity: 0;
+                width: 1px;
+                height: 1px;
+                pointer-events: none;
+            }
+
+            /* Menu toggle */
+            .menu-toggle {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                justify-content: center;
+                padding: 8px;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
 
-                #mode-state-input {
-                    display: none;
+                &:hover {
+                    background-color: rgba(255, 255, 255, 0.15);
                 }
 
-                .btn, .mode-toggle-label {
-                    background: none;
-                    border: none;
-                    cursor: pointer;
-                    padding: 5px;
-                    border-radius: 5px;
-                    transition: background-color 0.3s ease;
+                img {
+                    width: 24px;
+                    height: 24px;
+                    filter: brightness(0) invert(1);
+                }
+            }
 
-                    &:hover {
-                        background-color: rgba(255, 255, 255, 0.1);
+            /* Keyboard focus */
+            #sidebar-state-input:focus-visible + .menu-toggle {
+                outline: 2px solid white;
+                outline-offset: 3px;
+            }
+
+            /* Sidebar dropdown */
+            .sidebar-menu {
+                display: none;
+                position: absolute;
+                top: calc(100% + 10px);
+                right: 0;
+
+                min-width: 180px;
+                padding: 8px;
+                margin: 0;
+
+                list-style: none;
+                text-align: left;
+
+                background-color: var(--background-color);
+                color: var(--text-color);
+
+                border: 1px solid var(--secondary-color);
+                border-radius: 8px;
+
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+                z-index: 1000;
+
+                li {
+                    margin: 0;
+
+                    a {
+                        display: block;
+                        padding: 10px 12px;
+
+                        text-decoration: none;
+                        color: var(--text-color);
+
+                        border-radius: 5px;
+
+                        transition:
+                            background-color 0.2s ease,
+                            color 0.2s ease;
+
+                        &:hover {
+                            background-color: var(--primary-color);
+                            color: white;
+                        }
                     }
-
-                    img {
-                        width: 24px;
-                        height: 24px;
-                        filter: brightness(0) invert(1);
-                    }
                 }
+            }
 
-                .mode-toggle-label {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    user-select: none;
-
-                    .sun-icon { display: block; }
-                    .moon-icon { display: none; }
-                }
+            /* Show menu when checkbox is checked */
+            #sidebar-state-input:checked ~ .sidebar-menu {
+                display: block;
             }
         }
 
-        /* Swaps the state icons natively depending on the checked state */
-        html:has(#mode-state-input:checked) .mode-toggle-label {
-            .sun-icon { display: none; }
-            .moon-icon { display: block; }
-        }
 
-        /* Generic Layout Section Padding */
+        /* =================================
+           7. CONTENT SECTIONS
+        ================================= */
+
         section {
             padding-block: 40px;
         }
 
-        /* 4. FIXED: Moved keyframes outside of any classes to root level */
+        .hero-section {
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+
+        /* =================================
+           8. ANIMATIONS
+        ================================= */
+
         @keyframes shimmerMove {
             0% {
                 background-position: 200% 0;
             }
+
             100% {
                 background-position: -200% 0;
             }
         }
+
+
+        /* =================================
+           9. RESPONSIVE DESIGN
+        ================================= */
+
+        @media (max-width: 600px) {
+            .header-logo {
+                gap: 6px;
+
+                .logo {
+                    width: 36px;
+                    height: 36px;
+                }
+
+                .logo-text h1 {
+                    font-size: 1.5rem;
+                }
+
+                .logo-text small {
+                    font-size: 10px;
+                    letter-spacing: 1px;
+                }
+            }
+
+            .header-buttons {
+                gap: 4px;
+            }
+
+            .container {
+                padding-inline: 15px;
+            }
+
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+        }
+
     </style>
 </head>
+
 <body>
+
+    <!-- =================================
+         HEADER
+    ================================== -->
+
     <header class="header-section">
+
         <div class="container">
-            <div class="header-logo">
-                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBhbGV0dGUgcHJldmlldy1pY29uIj48cGF0aCBkPSJNMTIgMjJhMSAxIDAgMCAxIDAtMjAgMTAgOSAwIDAgMSAxMCA5IDUgNSAwIDAgMS01IDVoLTIuMjVhMS43NSAxLjc1IDAgMCAwLTEuNCAyLjhsLjMuNGExLjc1IDEuNzUgMCAwIDEtMS40IDIuOHoiLz48Y2lyY2xlIGN4PSIxMy41IiBjeT0iNi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iMTcuNSIgY3k9IjEwLjUiIHI9Ii41IiBmaWxsPSJjdXJyZW50Q29sb3IiLz48Y2lyY2xlIGN4PSI2LjUiIGN5PSIxMi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iOC41IiBjeT0iNy41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+" alt="Logo" class="logo">
-                <div class="logo-text">
-                <h1>Brand Name</h1>
-                <small>tagline will be here</small>
-                </div>
-            </div>
-            <div class="header-buttons">
-                <input type="checkbox" id="mode-state-input">
+
+            <!-- LOGO -->
+
+            <div class="header-logo">              
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBhbGV0dGUgcHJldmlldy1pY29uIj48cGF0aCBkPSJNMTIgMjJhMSAxIDAgMCAxIDAtMjAgMTAgOSAwIDAgMSAxMCA5IDUgNSAwIDAgMS01IDVoLTIuMjVhMS43NSAxLjc1IDAgMCAwLTEuNCAyLjhsLjMuNGExLjc1IDEuNzUgMCAwIDEtMS40IDIuOHoiLz48Y2lyY2xlIGN4PSIxMy41IiBjeT0iNi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iMTcuNSIgY3k9IjEwLjUiIHI9Ii41IiBmaWxsPSJjdXJyZW50Q29sb3IiLz48Y2lyY2xlIGN4PSI2LjUiIGN5PSIxMi41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PGNpcmNsZSBjeD0iOC41IiBjeT0iNy41IiByPSIuNSIgZmlsbD0iY3VycmVudENvbG9yIi8+PC9zdmc+" alt="Logo" class="logo">
+
+
                 
-                <label for="mode-state-input" class="mode-toggle-label">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXN1biBwcmV2aWV3LWljb24iPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiLz48cGF0aCBkPSJNMTIgMnYyIi8+PHBhdGggZD0iTTEyIDIwdjIiLz48cGF0aCBkPSJtNC45MyA0LjkzIDEuNDEgMS40MSIvPjxwYXRoIGQ9Im0xNy42NiAxNy42NiAxLjQxIDEuNDEiLz48cGF0aCBkPSJNMiAxMmgyIi8+PHBhdGggZD0iTTIwIDEyaDIiLz48cGF0aCBkPSJtNi4zNCAxNy42Ni0xLjQxIDEuNDEiLz48cGF0aCBkPSJtMTkuMDcgNC45My0xLjQxIDEuNDEiLz48L3N2Zz4=" alt="Mode Toggle Icon" class="sun-icon">
-                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1vb24gcHJldmlldy1pY29uIj48cGF0aCBkPSJNMjAuOTg1IDEyLjQ4NmE5IDkgMCAxIDEtOS40NzMtOS40NzJjLjQwNS0uMDIyLjYxNy40Ni40MDIuODAzYTYgNiAwIDAgMCA4LjI2OCA4LjI2OGMuMzQ0LS4yMTUuODI1LS4wMDQuODAzLjQwMSIvPjwvc3ZnPg==" alt="Mode Toggle Icon" class="moon-icon">
+
+
+                <div class="logo-text">
+
+                    <h1>Brand Name</h1>
+
+                    <small>tagline will be here</small>
+
+                </div>
+
+            </div>
+
+
+            <!-- HEADER BUTTONS -->
+
+            <div class="header-buttons">
+
+                <!-- DARK MODE -->
+
+                <input
+                    type="checkbox"
+                    id="mode-state-input"
+                >
+
+                <label
+                    for="mode-state-input"
+                    class="mode-toggle-label"
+                    aria-label="Toggle dark mode"
+                >
+
+                                       <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXN1biBwcmV2aWV3LWljb24iPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjQiLz48cGF0aCBkPSJNMTIgMnYyIi8+PHBhdGggZD0iTTEyIDIwdjIiLz48cGF0aCBkPSJtNC45MyA0LjkzIDEuNDEgMS40MSIvPjxwYXRoIGQ9Im0xNy42NiAxNy42NiAxLjQxIDEuNDEiLz48cGF0aCBkPSJNMiAxMmgyIi8+PHBhdGggZD0iTTIwIDEyaDIiLz48cGF0aCBkPSJtNi4zNCAxNy42Ni0xLjQxIDEuNDEiLz48cGF0aCBkPSJtMTkuMDcgNC45My0xLjQxIDEuNDEiLz48L3N2Zz4=" alt="Mode Toggle Icon" class="sun-icon">
+
+
+                                        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1vb24gcHJldmlldy1pY29uIj48cGF0aCBkPSJNMjAuOTg1IDEyLjQ4NmE5IDkgMCAxIDEtOS40NzMtOS40NzJjLjQwNS0uMDIyLjYxNy40Ni40MDIuODAzYTYgNiAwIDAgMCA4LjI2OCA4LjI2OGMuMzQ0LS4yMTUuODI1LS4wMDQuODAzLjQwMSIvPjwvc3ZnPg==" alt="Mode Toggle Icon" class="moon-icon">
+
+
                 </label>
 
-                <button class="btn menu-btn">
+
+                <!-- SIDEBAR -->
+
+                <aside class="sidebar-btn">
+
+                    <input
+                        type="checkbox"
+                        id="sidebar-state-input"
+                    >
+
+                    <label
+                        for="sidebar-state-input"
+                        class="menu-toggle"
+                        aria-label="Toggle navigation menu"
+                    >
+
                     <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1lbnUgcHJldmlldy1pY29uIj48cGF0aCBkPSJNNCA1aDE2Ii8+PHBhdGggZD0iTTQgMTJoMTYiLz48cGF0aCBkPSJNNCAxOWgxNiIvPjwvc3ZnPg==" alt="Menu Icon" class="menu-icon">
-                </button>
+
+                    </label>
+
+
+                    <!-- MENU ITEMS -->
+
+                    <ul class="sidebar-menu">
+
+                        <li><a href="#">Home</a></li>
+
+                        <li><a href="#">About</a></li>
+
+                        <li><a href="#">Services</a></li>
+
+                        <li><a href="#">Contact</a></li>
+
+                    </ul>
+
+                </aside>
+
             </div>
+
         </div>
+
     </header>
 
+
+    <!-- =================================
+         HERO SECTION
+    ================================== -->
+
     <section class="hero-section">
+
         <div class="container">
+
             <h1>Welcome to Our Website</h1>
+
             <p>This is the hero section.</p>
+
         </div>
+
     </section>
+
+
+    <!-- =================================
+         FEATURE SECTION
+    ================================== -->
 
     <section class="feature-section">
+
         <div class="container">
+
             <h2>Features</h2>
+
             <p>Here are some of our features.</p>
+
         </div>
+
     </section>
 
+
+    <!-- =================================
+         INFORMATION SECTION
+    ================================== -->
+
     <section class="info-section">
+
         <div class="container">
+
             <h2>Information</h2>
+
             <p>Here is some information about us.</p>
+
         </div>
+
     </section>
+
 </body>
 </html>
